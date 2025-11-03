@@ -1,0 +1,7 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: Fixed Size Lightweight Linear algebra library
+Description: Fixed size linear algebra package in C++
+Version: @PROJECT_VERSION@
+Cflags: -I${includedir}
