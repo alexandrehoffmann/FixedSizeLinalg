@@ -56,34 +56,41 @@ jobs:
         run: echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
 
       # Configure CMake
-      - name: Configure CMake
+      - name: Configure CMake (Linux)
+        if: runner.os == 'Linux'
         shell: bash
         run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            cmake -B "$BUILD_DIR" \
-                  -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-                  -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-                  -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-                  -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                  -S "${GITHUB_WORKSPACE}"
-          else
-            cmake -B "$BUILD_DIR" \
-                  -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-                  -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-                  -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                  -S "${GITHUB_WORKSPACE}"
+          cmake -B "$BUILD_DIR" \
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -S "${GITHUB_WORKSPACE}"
+
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -B "$env:BUILD_DIR" `
+                -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+                -S "${env:GITHUB_WORKSPACE}"
 
       # Build
       - name: Build
         run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
 
-      # Run tests
-      - name: Run tests
+      # Run tests (Linux)
+      - name: Run tests (Linux)
+        if: runner.os == 'Linux'
         working-directory: ${{ env.BUILD_DIR }}
         shell: bash
-        run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            ctest --build-config ${{ matrix.build_type }} --output-on-failure
-          else
-            ctest --output-on-failure
-          fi
+        run: ctest --output-on-failure
+
+      # Run tests (Windows)
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        working-directory: ${{ env.BUILD_DIR }}
+        shell: pwsh
+        run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
