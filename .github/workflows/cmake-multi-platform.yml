@@ -45,7 +45,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfmt-dev cmake g++ ninja-build libgtest-dev
+          sudo apt-get install -y libfmt-dev cmake g++ ninja-build
 
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
@@ -64,7 +64,8 @@ jobs:
                 -S "$GITHUB_WORKSPACE" \
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                 -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -G Ninja
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
@@ -76,8 +77,15 @@ jobs:
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       # --- Build ---
-      - name: Build
-        run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: cmake --build "$BUILD_DIR"
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake --build "$env:BUILD_DIR" --config ${{ matrix.build_type }}
 
       # --- Run tests ---
       - name: Run tests (Linux)
