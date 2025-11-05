@@ -2,9 +2,9 @@ name: CMake Multi-Platform CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -36,13 +36,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Install dependencies
+      # Linux dependencies
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libfmt-dev cmake g++ ninja-build libgtest-dev
 
+      # Windows dependencies using vcpkg
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
@@ -50,9 +51,8 @@ jobs:
           C:/vcpkg/bootstrap-vcpkg.bat
           C:/vcpkg/vcpkg install fmt:x64-windows
 
-      # Set reusable build directory
+      # Set build directory
       - name: Set build directory
-        id: build_dir
         run: echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
 
       # Configure CMake
@@ -77,8 +77,9 @@ jobs:
       - name: Build
         run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
 
-      # Test
+      # Run tests
       - name: Run tests
+        working-directory: ${{ env.BUILD_DIR }}
         shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
@@ -86,4 +87,3 @@ jobs:
           else
             ctest --output-on-failure
           fi
-        working-directory: "$BUILD_DIR"
