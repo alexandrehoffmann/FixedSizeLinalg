@@ -1,4 +1,4 @@
-name: CMake on multiple platforms
+name: CMake Multi-Platform CI
 
 on:
   push:
@@ -36,6 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install dependencies
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -49,33 +50,40 @@ jobs:
           C:/vcpkg/bootstrap-vcpkg.bat
           C:/vcpkg/vcpkg install fmt:x64-windows
 
-      - name: Set reusable strings
-        id: strings
-        shell: bash
-        run: |
-          echo "build_output_dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+      # Set reusable build directory
+      - name: Set build directory
+        id: build_dir
+        run: echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
 
+      # Configure CMake
       - name: Configure CMake
         shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            cmake -B "${{ steps.strings.outputs.build_output_dir }}" \
+            cmake -B "$BUILD_DIR" \
                   -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" \
                   -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
                   -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                   -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                  -S "${{ github.workspace }}"
+                  -S "${GITHUB_WORKSPACE}"
           else
-            cmake -B "${{ steps.strings.outputs.build_output_dir }}" \
+            cmake -B "$BUILD_DIR" \
                   -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
                   -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
                   -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                  -S "${{ github.workspace }}"
-          fi
+                  -S "${GITHUB_WORKSPACE}"
 
+      # Build
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build_output_dir }} --config ${{ matrix.build_type }}
+        run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
 
-      - name: Test
-        working-directory: ${{ steps.strings.outputs.build_output_dir }}
-        run: ctest --config ${{ matrix.build_type }} --output-on-failure
+      # Test
+      - name: Run tests
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            ctest --build-config ${{ matrix.build_type }} --output-on-failure
+          else
+            ctest --output-on-failure
+          fi
+        working-directory: "$BUILD_DIR"
