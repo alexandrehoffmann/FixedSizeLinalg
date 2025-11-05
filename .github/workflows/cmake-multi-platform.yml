@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -33,64 +34,60 @@ jobs:
           - os: ubuntu-latest
             c_compiler: cl
 
+    env:
+      BUILD_DIR: ${{ github.workspace }}/build
+
     steps:
       - uses: actions/checkout@v4
 
-      # Linux dependencies
+      # --- Install dependencies ---
       - name: Install dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libfmt-dev cmake g++ ninja-build libgtest-dev
 
-      # Windows dependencies using vcpkg
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
           C:/vcpkg/bootstrap-vcpkg.bat
           C:/vcpkg/vcpkg install fmt:x64-windows
 
-      # Set build directory
-      - name: Set build directory
-        run: echo "BUILD_DIR=${GITHUB_WORKSPACE}/build" >> $GITHUB_ENV
-
-      # Configure CMake
+      # --- Configure CMake ---
       - name: Configure CMake (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           cmake -B "$BUILD_DIR" \
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                -S "$GITHUB_WORKSPACE" \
                 -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -S "${GITHUB_WORKSPACE}"
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: |
-          cmake -B "$env:BUILD_DIR" `
-                -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
-                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
-                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-                -S "${env:GITHUB_WORKSPACE}"
+        run: cmake -B "$env:BUILD_DIR" -S "$env:GITHUB_WORKSPACE" `
+              -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+              -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
+              -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-      # Build
+      # --- Build ---
       - name: Build
         run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
 
-      # Run tests (Linux)
+      # --- Run tests ---
       - name: Run tests (Linux)
         if: runner.os == 'Linux'
-        working-directory: ${{ env.BUILD_DIR }}
         shell: bash
+        working-directory: ${{ env.BUILD_DIR }}
         run: ctest --output-on-failure
 
-      # Run tests (Windows)
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
-        working-directory: ${{ env.BUILD_DIR }}
         shell: pwsh
+        working-directory: ${{ env.BUILD_DIR }}
         run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
