@@ -37,6 +37,7 @@ build
 build/*
 *.exe
 *.out
+*.log
 *.app
 
 # debug information files

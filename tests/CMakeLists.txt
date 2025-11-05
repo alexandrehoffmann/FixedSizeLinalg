@@ -11,3 +11,5 @@ target_include_directories(tests_fslinalg PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
 target_link_libraries(tests_fslinalg PRIVATE FSLinalg gtest)
 
+add_test(NAME AllTests COMMAND tests_fslinalg)
+
