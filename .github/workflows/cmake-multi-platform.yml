@@ -49,19 +49,19 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DFSLinalg_BUILD_TESTS=ON 
+          -DFSLinalg_BUILD_TESTS=ON
           -DFSLinalg_BUILD_DEMO=ON
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          cmake -B build -S . `
+          & cmake -B build -S . `
             -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
             -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-            -DFSLinalg_BUILD_TESTS=ON 
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+            -DFSLinalg_BUILD_TESTS=ON `
             -DFSLinalg_BUILD_DEMO=ON
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
