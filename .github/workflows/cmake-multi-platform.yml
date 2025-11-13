@@ -33,7 +33,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up vcpkg (manifest mode)
+      # --- Set up vcpkg (manifest mode) ---
+      - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
@@ -52,15 +53,16 @@ jobs:
           -DFSLinalg_BUILD_TESTS=ON
           -DFSLinalg_BUILD_DEMO=ON
 
-      - name: Configure CMake (Windows)
+      - name: Configure CMake (Windows with Clang + Ninja)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           & cmake -B build -S . `
+            -G Ninja `
             -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+            -DCMAKE_C_COMPILER=clang `
+            -DCMAKE_CXX_COMPILER=clang++ `
             -DFSLinalg_BUILD_TESTS=ON `
             -DFSLinalg_BUILD_DEMO=ON
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
