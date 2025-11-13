@@ -1,88 +1,97 @@
-name: CMake Multi-Platform CI
+name: CMake Build
 
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
   pull_request:
-    branches: ["main"]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, clang, cl]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        build_type: [Release, Debug]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
 
     env:
       BUILD_DIR: ${{ github.workspace }}/build
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      # --- Install dependencies ---
-      - name: Install build tools (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ clang
+      # Install CMake, Ninja, etc.
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v2
 
-      # --- Use vcpkg on both platforms for consistency ---
+      - name: Setup Ninja
+        uses: ashutoshvarma/setup-ninja@v1.2
+
+      # Use run-vcpkg to handle vcpkg restore/build
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-          vcpkgJsonGlob: '**/vcpkg.json'
+          vcpkgGitCommitId: 45e3a4c9b27f08b83f5b1a00b6e2ff8a32ccf8a1  # replace with your baseline hash
+          vcpkgDirectory: ${{ github.workspace }}/vcpkg
+          runVcpkgInstall: true
 
-      # --- Configure CMake ---
       - name: Configure CMake (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          cmake -B "$BUILD_DIR" \
-                -S "$GITHUB_WORKSPACE" \
-                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-                -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-                -G Ninja
+          set -e
+          cmake -B "$BUILD_DIR" -S "$GITHUB_WORKSPACE" \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -G Ninja
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           cmake -B "$env:BUILD_DIR" -S "$env:GITHUB_WORKSPACE" `
-                -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
-                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
-                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
-                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      # --- Build ---
+      - name: Configure CMake (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -e
+          cmake -B "$BUILD_DIR" -S "$GITHUB_WORKSPACE" \
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+            -G Ninja
+
+      - name: Debug: check build directory
+        run: |
+          echo "Contents of build dir:"
+          ls -R "$BUILD_DIR" || true
+
       - name: Build
         run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
 
-      # --- Run tests ---
-      - name: Run tests
+      - name: Test
         working-directory: ${{ env.BUILD_DIR }}
-        run: |
-          ctest --build-config ${{ matrix.build_type }} --output-on-failure
+        run: ctest -C ${{ matrix.build_type }} --output-on-failure
