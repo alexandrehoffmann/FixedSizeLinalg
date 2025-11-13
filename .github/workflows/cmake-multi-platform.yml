@@ -34,22 +34,19 @@ jobs:
         with:
           submodules: recursive
 
-      # --- Install CMake & Ninja ---
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v2
 
       - name: Setup Ninja
         uses: ashutoshvarma/setup-ninja@v1.2
 
-      # --- vcpkg ---
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 45e3a4c9b27f08b83f5b1a00b6e2ff8a32ccf8a1  # replace with your baseline
+          vcpkgGitCommitId: 45e3a4c9b27f08b83f5b1a00b6e2ff8a32ccf8a1
           vcpkgDirectory: ${{ github.workspace }}/vcpkg
           runVcpkgInstall: true
 
-      # --- Configure CMake ---
       - name: Configure CMake (Linux)
         if: runner.os == 'Linux'
         shell: bash
@@ -79,17 +76,14 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
             -G Ninja
 
-      # --- Debug build folder ---
       - name: Debug: list build dir
         run: |
           echo "Contents of $BUILD_DIR:"
           ls -R "$BUILD_DIR" || true
 
-      # --- Build ---
       - name: Build
         run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
 
-      # --- Test ---
       - name: Run tests
         working-directory: ${{ env.BUILD_DIR }}
         run: ctest -C ${{ matrix.build_type }} --output-on-failure
