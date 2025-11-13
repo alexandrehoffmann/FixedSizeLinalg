@@ -21,8 +21,8 @@ jobs:
             c_compiler: clang
             cpp_compiler: clang++
           - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
+            c_compiler: clang
+            cpp_compiler: clang++
 
     env:
       BUILD_DIR: ${{ github.workspace }}/build
