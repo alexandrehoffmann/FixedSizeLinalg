@@ -5,27 +5,27 @@
 
 namespace FSLinalg
 {
-template<typename UndefinedMatrix>   class StripSymbolsAndEvalMatrix;
+	
+template<class GeneralMatrix>        class StripSymbolsFromVectorOuterProduct;
+template<class GeneralMatrix>        class StripSymbolsAndEvalMatrix;
 template<typename Alpha, class Expr> class MatrixScale;
 
 template<typename Alpha, class Expr> 
 struct MatrixTraits< MatrixScale<Alpha,Expr> >
 {
 	static_assert(IsScalar<Alpha>::value and IsMatrix<Expr>::value, "Alpha must be a Scalar and Expr must be a Vector");
-	
-	using ExprTraits = MatrixTraits<Expr>;
 		
-	using Scalar = typename ExprTraits::Scalar;
-	using Size   = typename ExprTraits::Size;
+	using Scalar = decltype(std::declval<Alpha>() * std::declval<typename Expr::Scalar>());
+	using Size   = typename Expr::Size;
 	
-	static constexpr bool hasReadRandomAccess  = ExprTraits::hasReadRandomAccess;
-	static constexpr bool hasWriteRandomAccess = ExprTraits::hasWriteRandomAccess;
-	static constexpr bool hasFlatRandomAccess  = ExprTraits::hasFlatRandomAccess;
-	static constexpr bool causesAliasingIssues = ExprTraits::causesAliasingIssues;
+	static constexpr bool hasReadRandomAccess  = Expr::hasReadRandomAccess;
+	static constexpr bool hasWriteRandomAccess = false;
+	static constexpr bool hasFlatRandomAccess  = Expr::hasFlatRandomAccess;
+	static constexpr bool causesAliasingIssues = Expr::causesAliasingIssues;
 	static constexpr bool isLeaf               = false;
 	
-	static constexpr Size nRows = ExprTraits::nRows;   
-	static constexpr Size nCols = ExprTraits::nCols;   
+	static constexpr Size nRows = Expr::nRows;   
+	static constexpr Size nCols = Expr::nCols;   
 };
 
 template<typename Alpha, class Expr> 
@@ -35,6 +35,7 @@ public:
 	using Self = MatrixScale<Alpha,Expr>;
 	FSLINALG_DEFINE_MATRIX
 	
+	friend class StripSymbolsFromVectorOuterProduct<Self>; 
 	friend class StripSymbolsAndEvalMatrix<Self>; 
 	
 	MatrixScale(const Alpha& alpha, const MatrixBase<Expr>&  expr) : m_alpha(alpha), m_expr(expr.derived()) {}
@@ -43,7 +44,6 @@ public:
 
 	const_ReturnType getImpl(const Size i) const requires(hasReadRandomAccess and hasFlatRandomAccess) { return m_alpha*m_expr.getImpl(i); }
 	
-	template<class Dst> bool isAliasedToImpl(const VectorBase<Dst>& other) const { return m_expr.isAliasedToImpl(other); }
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_expr.isAliasedToImpl(other); }
 
 	template<typename Beta, class Dst, bool checkAliasing>
@@ -60,13 +60,13 @@ private:
 }; 
 
 template<typename Alpha, class Expr> 
-FSLinalg::MatrixScale<Alpha, Expr> operator*(const Alpha& alpha, const FSLinalg::MatrixBase<Expr>& expr) requires(FSLinalg::IsScalar<Alpha>::value) { return FSLinalg::MatrixScale<Alpha,Expr>(alpha, expr); }
+MatrixScale<Alpha, Expr> operator*(const Alpha& alpha, const MatrixBase<Expr>& expr) requires(IsScalar<Alpha>::value) { return MatrixScale<Alpha,Expr>(alpha, expr); }
 
 template<typename Alpha, class Expr> 
-FSLinalg::MatrixScale<Alpha, Expr> operator*(const FSLinalg::MatrixBase<Expr>& expr, const Alpha& alpha) requires(FSLinalg::IsScalar<Alpha>::value) { return FSLinalg::MatrixScale<Alpha,Expr>(alpha, expr); }
+MatrixScale<Alpha, Expr> operator*(const MatrixBase<Expr>& expr, const Alpha& alpha) requires(IsScalar<Alpha>::value) { return MatrixScale<Alpha,Expr>(alpha, expr); }
 
 template<typename Alpha, class Expr> 
-FSLinalg::MatrixScale<Alpha, Expr> operator/(const FSLinalg::MatrixBase<Expr>& expr, const Alpha& alpha) requires(FSLinalg::IsScalar<Alpha>::value) { return FSLinalg::MatrixScale<Alpha,Expr>(1. / alpha, expr); }
+MatrixScale<Alpha, Expr> operator/(const MatrixBase<Expr>& expr, const Alpha& alpha) requires(IsScalar<Alpha>::value) { return MatrixScale<Alpha,Expr>(1. / alpha, expr); }
 
 } // namespace FSLinalg
 

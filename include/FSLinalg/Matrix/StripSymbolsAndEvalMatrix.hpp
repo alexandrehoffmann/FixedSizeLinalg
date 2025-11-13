@@ -4,6 +4,7 @@
 #include <FSLinalg/Matrix/MatrixBase.hpp>
 #include <FSLinalg/Matrix/Matrix.hpp>
 #include <FSLinalg/Matrix/MatrixScale.hpp>
+#include <FSLinalg/Matrix/MatrixMinus.hpp>
 #include <FSLinalg/Matrix/MatrixConj.hpp>
 #include <FSLinalg/Matrix/MatrixTransposed.hpp>
 
@@ -61,6 +62,30 @@ private:
 	Alpha                           m_alpha;
 };
 
+template<class Expr> 
+class StripSymbolsAndEvalMatrix< MatrixMinus<Expr> >
+{
+public:
+	using Matrix = typename StripSymbolsAndEvalMatrix<Expr>::Matrix;
+	using Scalar = typename StripSymbolsAndEvalMatrix<Expr>::Scalar;
+	
+	static constexpr bool isConjugated = StripSymbolsAndEvalMatrix<Expr>::isConjugated;
+	static constexpr bool isTransposed = StripSymbolsAndEvalMatrix<Expr>::isTransposed;
+	
+	static constexpr unsigned int nRows = StripSymbolsAndEvalMatrix<Expr>::nRows;
+	static constexpr unsigned int nCols = StripSymbolsAndEvalMatrix<Expr>::nCols;
+	
+	static constexpr bool createsTemporary = StripSymbolsAndEvalMatrix<Expr>::createsTemporary;
+	
+	StripSymbolsAndEvalMatrix(const MatrixMinus<Expr>& minus_expr) : m_expr(minus_expr.m_expr) {}
+	
+	const Matrix& getMatrix() const { return m_expr.getMatrix(); }
+	
+	Scalar getAlpha() const { return -m_expr.getAlpha(); }
+private:
+	StripSymbolsAndEvalMatrix<Expr> m_expr;
+};
+
 template<class Expr>
 class StripSymbolsAndEvalMatrix< MatrixConj<Expr> >
 {
@@ -80,7 +105,7 @@ public:
 	
 	const Matrix& getMatrix() const { return m_expr.getMatrix(); }
 	
-	Scalar getAlpha()  const { return m_expr.getAlpha();  }
+	Scalar getAlpha()  const { return conj(m_expr.getAlpha());  }
 private:
 	StripSymbolsAndEvalMatrix<Expr> m_expr;
 };

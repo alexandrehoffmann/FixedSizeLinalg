@@ -33,24 +33,27 @@ public:
 	using Self = Matrix<T, Nrows, Ncols>;
 	FSLINALG_DEFINE_MATRIX
 	
-	static constexpr bool IsScalarComplex = IsComplexScalar<Scalar>::value;
+	static constexpr bool isScalarComplex = IsComplexScalar<Scalar>::value;
+	static constexpr bool isVector = isRowVector or isColVector;
 	
-	Matrix(const RealScalar& value = RealScalar(0))  requires(IsScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] = value; } }
-	Matrix(std::initializer_list< std::initializer_list<RealScalar> > values) requires(IsScalarComplex);
+	Matrix(const RealScalar& value = RealScalar(0))  requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] = value; } }
+	Matrix(std::initializer_list< std::initializer_list<RealScalar> > values) requires(isScalarComplex);
+	Matrix(std::initializer_list<RealScalar> values) requires(isScalarComplex and isVector) : m_data(values) {}
 	
-	Matrix(const Scalar& value = Scalar(0))      { m_data.fill(value); }
+	Matrix(const Scalar& value = Scalar(0)) { m_data.fill(value); }
 	Matrix(std::initializer_list< std::initializer_list<Scalar> > values);
+	Matrix(std::initializer_list<Scalar> values) requires(isVector) { std::copy(std::cbegin(values), std::cend(values), std::begin(m_data)); }
 	
 	Matrix(const Matrix& other) : m_data(other.m_data) {}
 	
 	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(1., *this, std::false_type{}); }
 	
-	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (1., *this,  std::true_type{}); return *this; }
+	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (1., *this, std::true_type{}); return *this; }
 	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (1., *this, std::true_type{}); return *this; }
 	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (1., *this, std::true_type{}); return *this; }
 	
-	Matrix& operator*=(const RealScalar& alpha) requires(IsScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
-	Matrix& operator/=(const RealScalar& alpha) requires(IsScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }
+	Matrix& operator*=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
+	Matrix& operator/=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }
 	
 	Matrix& operator*=(const Scalar& alpha) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
 	Matrix& operator/=(const Scalar& alpha) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }
@@ -61,21 +64,22 @@ public:
 	const_ReturnType getImpl(const Size i, const Size j) const { return m_data[i*nCols + j]; }
 	      ReturnType getImpl(const Size i, const Size j)       { return m_data[i*nCols + j]; }
 	      
-	template<class Dst> 
-	constexpr bool isAliasedToImpl(const VectorBase<Dst>&) const { return false; }
-	
-	template<class Dst> 
-	bool isAliasedToImpl(const MatrixBase<Dst>& dst) const 
-	{ 
-		if constexpr (nRows == Dst::nRows and nCols == Dst::nCols) { return std::addressof(dst.derived()) == this; }
-		else                                                       { return false; }
-	}
+	template<class Dst>           bool isAliasedToImpl(const MatrixBase<Dst>& dst) const requires(nRows == Dst::nRows and nCols == Dst::nCols) { return std::addressof(dst.derived()) == this; }
+	template<class Dst> constexpr bool isAliasedToImpl(const MatrixBase<Dst>&    ) const requires(nRows != Dst::nRows or  nCols != Dst::nCols) { return false; }
 private:
 	std::array<Scalar, size> m_data;
 };
 
 template<unsigned int Nrows, unsigned Ncols> using RealMatrix = Matrix<double, Nrows, Ncols>;
 template<unsigned int Nrows, unsigned Ncols> using CpxMatrix  = Matrix<std::complex<double>, Nrows, Ncols>;
+
+template<typename T, unsigned int Nrows> using RowVector     = Matrix<T, Nrows, 1>;
+template<unsigned int Nrows>             using RealRowVector = Matrix<double, Nrows, 1>;
+template<unsigned int Nrows>             using CpxRowVector  = Matrix<std::complex<double>, Nrows, 1>;
+
+template<typename T, unsigned int Ncols> using ColVector     = Matrix<T, 1, Ncols>;
+template<unsigned int Ncols>             using RealColVector = Matrix<double, 1, Ncols>;
+template<unsigned int Ncols>             using CpxColVector  = Matrix<std::complex<double>, 1, Ncols>;
 
 } // namespace FSLinalg
 

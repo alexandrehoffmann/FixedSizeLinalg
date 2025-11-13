@@ -1,11 +1,13 @@
 #ifndef FSLINALG_MATRIX_TRANSPOSE_IMPL_HPP
 #define FSLINALG_MATRIX_TRANSPOSE_IMPL_HPP
 
+#include <FSLinalg/Matrix/MatrixTransposed.hpp>
+
 namespace FSLinalg
 {
 	
 template<typename Expr> 
-auto MatrixTransposed<Expr>::operator*=(const RealScalar& alpha) -> MatrixTransposed& requires(IsScalarComplex)
+auto MatrixTransposed<Expr>::operator*=(const RealScalar& alpha) -> MatrixTransposed& requires(isScalarComplex)
 {
 	if constexpr (hasFlatRandomAccess)
 	{
@@ -24,7 +26,7 @@ auto MatrixTransposed<Expr>::operator*=(const RealScalar& alpha) -> MatrixTransp
 }
 
 template<typename Expr> 
-auto MatrixTransposed<Expr>::operator/=(const RealScalar& alpha) -> MatrixTransposed& requires(IsScalarComplex)
+auto MatrixTransposed<Expr>::operator/=(const RealScalar& alpha) -> MatrixTransposed& requires(isScalarComplex)
 {
 	if constexpr (hasFlatRandomAccess)
 	{

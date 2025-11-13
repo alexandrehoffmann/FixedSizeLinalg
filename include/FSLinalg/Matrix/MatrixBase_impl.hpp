@@ -13,6 +13,8 @@ void MatrixBase<Derived>::assignTo(const Alpha& alpha, MatrixBase<Dst>& dst, std
 	static_assert(Dst::nRows == nRows, "Matrix sizes must match");
 	static_assert(Dst::nCols == nCols, "Matrix sizes must match");
 	
+	using DstScalar = typename Dst::Scalar;
+	
 	if constexpr (hasReadRandomAccess)
 	{
 		if (checkAliasing and causesAliasingIssues and isAliasedTo(dst))
@@ -25,7 +27,7 @@ void MatrixBase<Derived>::assignTo(const Alpha& alpha, MatrixBase<Dst>& dst, std
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) = alpha*tmp(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) = DstScalar(alpha*tmp(i,j)); }}
 			}
 		}
 		else
@@ -36,7 +38,7 @@ void MatrixBase<Derived>::assignTo(const Alpha& alpha, MatrixBase<Dst>& dst, std
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) = alpha*Base::derived().getImpl(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) = DstScalar(alpha*Base::derived().getImpl(i,j)); }}
 			}
 		}
 	}
@@ -52,6 +54,8 @@ void MatrixBase<Derived>::increment(const Alpha& alpha, MatrixBase<Dst>& dst, st
 	static_assert(Dst::nRows == nRows, "Matrix sizes must match");
 	static_assert(Dst::nCols == nCols, "Matrix sizes must match");
 	
+	using DstScalar = typename Dst::Scalar;
+	
 	if constexpr (hasReadRandomAccess)
 	{
 		if (checkAliasing and causesAliasingIssues and isAliasedTo(dst))
@@ -64,7 +68,7 @@ void MatrixBase<Derived>::increment(const Alpha& alpha, MatrixBase<Dst>& dst, st
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) += alpha*tmp(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) += DstScalar(alpha*tmp(i,j)); }}
 			}
 		}
 		else
@@ -75,7 +79,7 @@ void MatrixBase<Derived>::increment(const Alpha& alpha, MatrixBase<Dst>& dst, st
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) += alpha*Base::derived().getImpl(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) += DstScalar(alpha*Base::derived().getImpl(i,j)); }}
 			}
 		}
 	}
@@ -91,6 +95,8 @@ void MatrixBase<Derived>::decrement(const Alpha& alpha, MatrixBase<Dst>& dst, st
 	static_assert(Dst::nRows == nRows, "Matrix sizes must match");
 	static_assert(Dst::nCols == nCols, "Matrix sizes must match");
 	
+	using DstScalar = typename Dst::Scalar;
+	
 	if constexpr (hasReadRandomAccess)
 	{
 		if (checkAliasing and causesAliasingIssues and isAliasedTo(dst))
@@ -103,7 +109,7 @@ void MatrixBase<Derived>::decrement(const Alpha& alpha, MatrixBase<Dst>& dst, st
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) -= alpha*tmp(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) -= DstScalar(alpha*tmp(i,j)); }}
 			}
 		}
 		else
@@ -114,7 +120,7 @@ void MatrixBase<Derived>::decrement(const Alpha& alpha, MatrixBase<Dst>& dst, st
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) -= alpha*Base::derived().getImpl(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) -= DstScalar(alpha*Base::derived().getImpl(i,j)); }}
 			}
 		}
 	}

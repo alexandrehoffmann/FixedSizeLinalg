@@ -11,25 +11,21 @@ template<class Lhs, class Rhs> class MatrixSum;
 template<class Lhs, class Rhs>
 struct MatrixTraits< MatrixSum<Lhs,Rhs> >
 {
-	static_assert(IsMatrix<Lhs>::value and IsMatrix<Rhs>::value, "Both LHS and RHS must be matrices");
+	static_assert(IsMatrix<Lhs>::value and IsMatrix<Rhs>::value, "Both LHS and RHS must be matrices");	
+	static_assert(Lhs::nRows == Rhs::nRows, "Matrices size must match");
+	static_assert(Lhs::nCols == Rhs::nCols, "Matrices size must match");
 	
-	using LhsTraits = MatrixTraits<Lhs>;
-	using RhsTraits = MatrixTraits<Rhs>;
+	using Scalar = decltype(std::declval<typename Lhs::Scalar>() + std::declval<typename Rhs::Scalar>());
+	using Size   = std::common_type_t<typename Lhs::Size, typename Rhs::Size>;
 	
-	static_assert(LhsTraits::nRows == RhsTraits::nCols, "Matrices size must match");
-	static_assert(LhsTraits::nCols == RhsTraits::nCols, "Matrices size must match");
-	
-	using Scalar = decltype(std::declval<typename LhsTraits::Scalar>() + std::declval<typename RhsTraits::Scalar>());
-	using Size   = std::common_type_t<typename LhsTraits::Size, typename RhsTraits::Size>;
-	
-	static constexpr bool hasReadRandomAccess  = LhsTraits::hasReadRandomAccess and RhsTraits::hasReadRandomAccess;
+	static constexpr bool hasReadRandomAccess  = Lhs::hasReadRandomAccess and Rhs::hasReadRandomAccess;
 	static constexpr bool hasWriteRandomAccess = false;
-	static constexpr bool hasFlatRandomAccess  = LhsTraits::hasFlatRandomAccess and RhsTraits::hasFlatRandomAccess;
-	static constexpr bool causesAliasingIssues = LhsTraits::causesAliasingIssues or RhsTraits::causesAliasingIssues;
+	static constexpr bool hasFlatRandomAccess  = Lhs::hasFlatRandomAccess and Rhs::hasFlatRandomAccess;
+	static constexpr bool causesAliasingIssues = Lhs::causesAliasingIssues or Rhs::causesAliasingIssues;
 	static constexpr bool isLeaf               = false;
 	
-	static constexpr Size nRows = LhsTraits::nRows;   
-	static constexpr Size nCols = LhsTraits::nCols;   
+	static constexpr Size nRows = Lhs::nRows;   
+	static constexpr Size nCols = Lhs::nCols;   
 };
 
 template<class Lhs, class Rhs>
@@ -45,7 +41,6 @@ public:
 	
 	const_ReturnType getImpl(const Size i) const requires(hasReadRandomAccess and hasFlatRandomAccess) { return m_lhs.getImpl(i) + m_rhs.getImpl(i); }
 	
-	template<class Dst> bool isAliasedToImpl(const VectorBase<Dst>& other) const { return m_lhs.isAliasedToImpl(other) or m_rhs.isAliasedToImpl(other); }
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_lhs.isAliasedToImpl(other) or m_rhs.isAliasedToImpl(other); }
 
 	template<typename Alpha, class Dst, bool checkAliasing>
@@ -62,7 +57,7 @@ private:
 };
 
 template<class Lhs, class Rhs> 
-FSLinalg::MatrixSum<Lhs,Rhs> operator+(const FSLinalg::MatrixBase<Lhs>& lhs, const FSLinalg::MatrixBase<Rhs>& rhs) { return FSLinalg::MatrixSum<Lhs,Rhs>(lhs, rhs); }
+MatrixSum<Lhs,Rhs> operator+(const MatrixBase<Lhs>& lhs, const MatrixBase<Rhs>& rhs) { return MatrixSum<Lhs,Rhs>(lhs, rhs); }
 
 } // FSLinalg
 

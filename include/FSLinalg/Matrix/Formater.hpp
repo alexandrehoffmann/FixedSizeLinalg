@@ -21,22 +21,41 @@ public:
 		Size rowsM1 = Size(A.getRows()-1);
 		Size colsM1 = Size(A.getCols()-1);
 		
-		ctx.out() = format_to(ctx.out(), "[");
-		for (Size i=0; i!=rowsM1; ++i)
+		if constexpr (Expr::isRowVector or Expr::isColVector)
 		{
+			ctx.out() = format_to(ctx.out(), "[");
+			for (Size i=0; i!=Size(A.getSize()-1); ++i)
+			{
+				ctx.out() = format_to(ctx.out(), "{}, ", A[i]);
+			}
+			if constexpr (Expr::isRowVector)
+			{
+				return format_to(ctx.out(), "{}]^T", A[Size(A.getSize()-1)]);
+			}
+			else
+			{
+				return format_to(ctx.out(), "{}]", A[Size(A.getSize()-1)]);
+			}
+		}
+		else
+		{
+			ctx.out() = format_to(ctx.out(), "[");
+			for (Size i=0; i!=rowsM1; ++i)
+			{
+				ctx.out() = format_to(ctx.out(), "[");
+				for (Size j=0; j!=colsM1; ++j)
+				{
+					ctx.out() = format_to(ctx.out(), "{}, ", A(i,j));
+				}
+				ctx.out() = format_to(ctx.out(), "{}]\n", A(i, colsM1));
+			}
 			ctx.out() = format_to(ctx.out(), "[");
 			for (Size j=0; j!=colsM1; ++j)
 			{
-				ctx.out() = format_to(ctx.out(), "{}, ", A(i,j));
+				ctx.out() = format_to(ctx.out(), "{}, ", A(rowsM1,j));
 			}
-			ctx.out() = format_to(ctx.out(), "{}]\n", A(i, colsM1));
+			return format_to(ctx.out(), "{}]]", A(rowsM1,colsM1));
 		}
-		ctx.out() = format_to(ctx.out(), "[");
-		for (Size j=0; j!=colsM1; ++j)
-		{
-			ctx.out() = format_to(ctx.out(), "{}, ", A(rowsM1,j));
-		}
-		return format_to(ctx.out(), "{}]]", A(rowsM1,colsM1));
 	}
 };
 

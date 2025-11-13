@@ -4,6 +4,8 @@
 #include <complex>
 #include <concepts>
 
+#include <cstdint>
+
 namespace FSLinalg
 {
 
@@ -14,7 +16,7 @@ struct NumTraits<T>
 {	
 	using Real = T;
 	
-	static constexpr bool IsComplex = false;
+	static constexpr bool isComplex = false;
 	static constexpr Real epsilon   = std::numeric_limits<Real>::epsilon();
 	static constexpr Real max       = std::numeric_limits<Real>::max();
 	static constexpr Real min       = std::numeric_limits<Real>::min();
@@ -26,7 +28,7 @@ struct NumTraits< std::complex<T> >
 {
 	using Real = T;
 	
-	static constexpr bool IsComplex = true;
+	static constexpr bool isComplex = true;
 	static constexpr Real epsilon   = std::numeric_limits<Real>::epsilon();
 	static constexpr Real max       = std::numeric_limits<Real>::max();
 	static constexpr Real min       = std::numeric_limits<Real>::min();
@@ -36,15 +38,15 @@ struct NumTraits< std::complex<T> >
 //// for unit vectors
 
 template<>
-struct NumTraits<bool>
+struct NumTraits<uint8_t>
 {
-	using Real = bool;
+	using Real = uint8_t;
 	
-	static constexpr bool IsComplex = false;
-	static constexpr Real epsilon   = std::numeric_limits<bool>::epsilon();
-	static constexpr Real max       = std::numeric_limits<bool>::max();
-	static constexpr Real min       = std::numeric_limits<bool>::min();
-	static constexpr Real infinity  = std::numeric_limits<bool>::infinity();
+	static constexpr bool isComplex = false;
+	static constexpr Real epsilon   = std::numeric_limits<uint8_t>::epsilon();
+	static constexpr Real max       = std::numeric_limits<uint8_t>::max();
+	static constexpr Real min       = std::numeric_limits<uint8_t>::min();
+	static constexpr Real infinity  = std::numeric_limits<uint8_t>::infinity();
 };
 
 } // namespace FSLinalg

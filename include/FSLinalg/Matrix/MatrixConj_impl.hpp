@@ -1,6 +1,8 @@
 #ifndef FSLINALG_MATRIX_CONJ_IMPL_HPP
 #define FSLINALG_MATRIX_CONJ_IMPL_HPP
 
+#include <FSLinalg/Matrix/MatrixConj.hpp>
+
 namespace FSLinalg
 {
 

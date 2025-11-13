@@ -9,7 +9,7 @@ namespace FSLinalg
 {
 
 template<typename T, unsigned int Nrows, unsigned Ncols>
-Matrix<T,Nrows,Ncols>::Matrix(std::initializer_list< std::initializer_list<RealScalar> > values) requires(IsScalarComplex)
+Matrix<T,Nrows,Ncols>::Matrix(std::initializer_list< std::initializer_list<RealScalar> > values) requires(isScalarComplex)
 {
 	using Iterator = typename std::array<Scalar, size>::iterator;
 	

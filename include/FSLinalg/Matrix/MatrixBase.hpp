@@ -2,7 +2,8 @@
 #define FSLINALG_MATRIX_BASE_HPP
 
 #include <FSLinalg/CRTPBase.hpp>
-#include <FSLinalg/NumTraits.hpp>
+#include <FSLinalg/Scalar.hpp>
+#include <FSLinalg/misc/Logical.hpp>
 #include <type_traits>
 
 namespace FSLinalg
@@ -42,6 +43,11 @@ public:
 	static constexpr Size nRows                = DerivedTraits::nRows;
 	static constexpr Size nCols                = DerivedTraits::nCols;
 	static constexpr Size size                 = nRows*nCols;
+	static constexpr bool isRowVector          = (nCols == 1);
+	static constexpr bool isColVector          = (nRows == 1);
+	
+	static_assert(implies(isRowVector and hasReadRandomAccess, hasFlatRandomAccess), "Row vectors with a random access operator must have a flat random access operator");
+	static_assert(implies(isColVector and hasReadRandomAccess, hasFlatRandomAccess), "Col vectors with a random access operator must have a flat random access operator");
 	
 	constexpr Size getRows() const { return nRows; }
 	constexpr Size getCols() const { return nCols; }
@@ -53,7 +59,6 @@ public:
 	const_ReturnType operator[](const Size& i) const requires(hasReadRandomAccess  and hasFlatRandomAccess) { return Base::derived().getImpl(i); }
 	      ReturnType operator[](const Size& i)       requires(hasWriteRandomAccess and hasFlatRandomAccess) { return Base::derived().getImpl(i); }
 
-	template<class Dst> bool isAliasedTo(const VectorBase<Dst>& other) const { return Base::derived().isAliasedToImpl(other); }
 	template<class Dst> bool isAliasedTo(const MatrixBase<Dst>& other) const { return Base::derived().isAliasedToImpl(other); }
 
 	template<typename Alpha, class Dst, bool checkAliasing>
@@ -91,6 +96,8 @@ template<typename Expr> concept WritableMatrix_concept = IsMatrix<Expr>::value a
 	using Base::nRows;\
 	using Base::nCols;\
     using Base::size;\
+    using Base::isRowVector;\
+    using Base::isColVector;\
     \
 
 template<typename Lhs, typename Rhs> requires(Lhs::hasReadRandomAccess and Rhs::hasReadRandomAccess) bool operator==(const FSLinalg::MatrixBase<Lhs>& lhs, const FSLinalg::MatrixBase<Rhs>& rhs);
