@@ -39,6 +39,14 @@ jobs:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgJsonGlob: '**/vcpkg.json'
 
+      # --- Install pkgconf on Windows ---
+      - name: Install pkgconf (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}/vcpkg/vcpkg.exe" install pkgconf
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       # --- Configure CMake ---
       - name: Configure CMake (Linux/macOS)
         if: runner.os != 'Windows'
