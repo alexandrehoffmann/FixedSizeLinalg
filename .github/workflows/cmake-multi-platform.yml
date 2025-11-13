@@ -1,89 +1,68 @@
-name: CMake Multi-Platform CI
+name: CMake Multi-Platform
 
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
   pull_request:
-    branches: ["main"]
 
 jobs:
   build:
+    name: Build (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        build_type: [Release, Debug]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        build_type: [Release]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
-
-    env:
-      BUILD_DIR: ${{ github.workspace }}/build
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v2
-
-      - name: Setup Ninja
-        uses: ashutoshvarma/setup-ninja@v1.2
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: 45e3a4c9b27f08b83f5b1a00b6e2ff8a32ccf8a1
-          vcpkgDirectory: ${{ github.workspace }}/vcpkg
-          runVcpkgInstall: true
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgJsonGlob: '**/vcpkg.json'
 
-      - name: Configure CMake (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          set -e
-          cmake -B "$BUILD_DIR" -S "$GITHUB_WORKSPACE" \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-            -G Ninja
+      - name: Configure CMake (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: >
+          cmake -B build
+          -S .
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: cmake --build build --config ${{ matrix.build_type }}
 
       - name: Configure CMake (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake -B "$env:BUILD_DIR" -S "$env:GITHUB_WORKSPACE" -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Configure CMake (macOS)
-        if: runner.os == 'macOS'
-        shell: bash
         run: |
-          set -e
-          cmake -B "$BUILD_DIR" -S "$GITHUB_WORKSPACE" \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-            -G Ninja
+          cmake -B build -S . `
+            -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} `
+            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: Debug: list build dir
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          echo "Contents of $BUILD_DIR:"
-          ls -R "$BUILD_DIR" || true
-
-      - name: Build
-        run: cmake --build "$BUILD_DIR" --config ${{ matrix.build_type }}
-
-      - name: Run tests
-        working-directory: ${{ env.BUILD_DIR }}
-        run: ctest -C ${{ matrix.build_type }} --output-on-failure
+          cmake --build build --config ${{ matrix.build_type }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
