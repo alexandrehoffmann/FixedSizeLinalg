@@ -33,19 +33,11 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Set up vcpkg
+      - name: Set up vcpkg (manifest mode)
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgJsonGlob: '**/vcpkg.json'
-
-      # --- Install pkgconf on Windows ---
-      - name: Install pkgconf (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          & "${{ github.workspace }}/vcpkg/vcpkg.exe" install pkgconf
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       # --- Configure CMake ---
       - name: Configure CMake (Linux/macOS)
