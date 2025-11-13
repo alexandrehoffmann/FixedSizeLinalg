@@ -2,7 +2,8 @@
   "name": "fixedsizelinalg",
   "version-string": "0.1.0",
   "dependencies": [
-    "fmt"
+    "fmt",
+    "pkgconf"
   ],
   "builtin-baseline": "2d6a6cf3ac9a7cc93942c3d289a2f9c661a6f4a7"
 }
