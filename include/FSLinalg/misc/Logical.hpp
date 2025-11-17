@@ -4,6 +4,6 @@
 namespace FSLinalg
 {
 	constexpr bool implies(const bool p, const bool q) { return (not p) or q; }
-}
+} // namespace FSLinalg
 
 #endif // FSLINALG_MISC_LOGICAL_HPP

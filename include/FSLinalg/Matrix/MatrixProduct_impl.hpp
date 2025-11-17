@@ -1,5 +1,5 @@
-#ifndef FSLINALG_MATRIX_MATRIX_PRODUCT_IMPL_HPP
-#define FSLINALG_MATRIX_MATRIX_PRODUCT_IMPL_HPP
+#ifndef FSLINALG_MATRIX_PRODUCT_IMPL_HPP
+#define FSLINALG_MATRIX_PRODUCT_IMPL_HPP
 
 #include <FSLinalg/Matrix/MatrixProduct.hpp>
 #include <FSLinalg/BasicLinalg/GeneralMatrixMatrixProduct.hpp>
@@ -86,4 +86,4 @@ void MatrixProduct<Lhs,Rhs>::decrementImpl(const Alpha& alpha, MatrixBase<Dst>& 
 
 } // namespace FSLinalg
 
-#endif // FSLINALG_MATRIX_MATRIX_PRODUCT_IMPL_HPP
+#endif // FSLINALG_MATRIX_PRODUCT_IMPL_HPP

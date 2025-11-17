@@ -10,6 +10,8 @@
 #include <FSLinalg/Matrix/VectorCross.hpp>
 #include <FSLinalg/Matrix/StripSymbolsAndEvalMatrix.hpp>
 #include <FSLinalg/Matrix/UnitMatrix.hpp>
+#include <FSLinalg/Matrix/MatrixProductAnalyzer.hpp>
+#include <FSLinalg/Matrix/MatrixProductChain.hpp>
 
 #include <FSLinalg/Matrix/MatrixBase_impl.hpp>
 #include <FSLinalg/Matrix/MatrixConj_impl.hpp>
@@ -17,3 +19,5 @@
 #include <FSLinalg/Matrix/Matrix_impl.hpp>
 #include <FSLinalg/Matrix/MatrixTransposed_impl.hpp>
 #include <FSLinalg/Matrix/VectorCross_impl.hpp>
+#include <FSLinalg/Matrix/MatrixProductAnalyzer_impl.hpp>
+#include <FSLinalg/Matrix/MatrixProductChain_impl.hpp>

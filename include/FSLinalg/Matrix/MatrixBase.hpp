@@ -25,13 +25,13 @@ public:
 	
 	template<class Dst> 
 	struct IsConvertibleTo : std::bool_constant<
-		std::is_base_of<MatrixBase<Dst>, Dst>::value 
+		    std::is_base_of<MatrixBase<Dst>, Dst>::value 
 		and Dst::hasWriteRandomAccess
 		and std::is_convertible<Scalar, typename Dst::Scalar>::value> {};
 		
 	template<class Src> 
 	struct IsConstructibleFrom : std::bool_constant<
-		std::is_base_of<MatrixBase<Src>, Src>::value 
+		    std::is_base_of<MatrixBase<Src>, Src>::value 
 		and DerivedTraits::hasWriteRandomAccess
 		and std::is_convertible<typename Src::Scalar, Scalar>::value> {};
 		

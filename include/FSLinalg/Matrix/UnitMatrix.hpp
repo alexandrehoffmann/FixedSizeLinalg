@@ -11,7 +11,7 @@ template<unsigned int Nrows, unsigned Ncols> class UnitMatrix;
 template<unsigned int Nrows, unsigned Ncols>
 struct MatrixTraits< UnitMatrix<Nrows, Ncols> >
 {	
-	using Scalar     = uint8_t;
+	using Scalar     = int;
 	using Size       = unsigned int;
 	
 	static constexpr bool hasReadRandomAccess  = true;
@@ -45,6 +45,7 @@ public:
 	Id getId() const { return m_id; }
 	
 	template<class Dst> constexpr bool isAliasedToImpl(const MatrixBase<Dst>&) const { return false; }
+	template<class Dst>           bool isAliasedToImpl(const Self& dst)        const { return std::addressof(dst) == this; }
 private:
 	Id m_id;
 };

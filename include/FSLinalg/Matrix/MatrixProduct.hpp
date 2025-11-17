@@ -1,12 +1,20 @@
-#ifndef FSLINALG_MATRIX_MATRIX_PRODUCT_HPP
-#define FSLINALG_MATRIX_MATRIX_PRODUCT_HPP
+#ifndef FSLINALG_MATRIX_PRODUCT_HPP
+#define FSLINALG_MATRIX_PRODUCT_HPP
 
 #include <FSLinalg/Matrix/MatrixBase.hpp>
 #include <FSLinalg/Matrix/MatrixTransposed.hpp>
 #include <FSLinalg/Matrix/StripSymbolsAndEvalMatrix.hpp>
+#include <FSLinalg/Matrix/MatrixProductAnalyzer.hpp>
 
 namespace FSLinalg
 {
+
+namespace detail
+{
+
+template<class Expr> struct MatrixProductAnalyzerImpl;
+
+} // namespace detail
 
 template<class Lhs, class Rhs> class MatrixProduct;
 
@@ -19,7 +27,7 @@ struct MatrixTraits< MatrixProduct<Lhs, Rhs> >
 	using Scalar = decltype(std::declval<typename Lhs::Scalar>() * std::declval<typename Rhs::Scalar>());
 	using Size   = std::common_type_t<typename Lhs::Size, typename Rhs::Size>;
 	
-	static constexpr bool hasReadRandomAccess  = Lhs::isRowVector and Rhs::isColVector and Lhs::hasFlatRandomAccess and Rhs::hasFlatRandomAccess;
+	static constexpr bool hasReadRandomAccess  = (Lhs::isRowVector and Lhs::hasFlatRandomAccess) or (Rhs::isColVector and Rhs::hasFlatRandomAccess);
 	static constexpr bool hasWriteRandomAccess = false;
 	static constexpr bool hasFlatRandomAccess  = false;
 	static constexpr bool causesAliasingIssues = true;
@@ -36,10 +44,15 @@ public:
 	using Self = MatrixProduct<Lhs,Rhs>;
 	FSLINALG_DEFINE_MATRIX
 	
+	using OptimallyBracketedSelf = MatrixProductAnalyzer<Self>;
+	
+	friend struct detail::MatrixProductAnalyzerImpl< Self >;
+	
 	MatrixProduct(const MatrixBase<Lhs>& lhs, const MatrixBase<Rhs>& rhs) : m_lhs(lhs.derived()), m_rhs(rhs.derived()) {}
 	
 	static constexpr bool createTemporaryLhs = StripSymbolsAndEvalMatrix<Lhs>::createsTemporary;
 	static constexpr bool createTemporaryRhs = StripSymbolsAndEvalMatrix<Rhs>::createsTemporary;
+	static constexpr bool isOptimallyBracked = std::is_same<Self, OptimallyBracketedSelf>::value;
 	
 	/**
 	 * @brief Only awailable when multiplying row-vector and col-vector
@@ -86,4 +99,4 @@ MatrixProduct< Lhs,MatrixTransposed<Rhs> > outer(const MatrixBase<Lhs>& lhs, con
 
 } // namespace FSLinalg
 
-#endif // FSLINALG_MATRIX_MATRIX_PRODUCT_HPP
+#endif // FSLINALG_MATRIX_PRODUCT_HPP

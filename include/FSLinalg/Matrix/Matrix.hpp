@@ -33,6 +33,13 @@ public:
 	using Self = Matrix<T, Nrows, Ncols>;
 	FSLINALG_DEFINE_MATRIX
 	
+	template<class Dst>
+	struct CanBeAlisaedTo : std::bool_constant< 
+		    IsMatrix<Dst>::value 
+		and Base::nRows == Dst::nRows
+		and Base::nCols == Dst::nCols
+		and std::is_same<Scalar, typename Dst::Scalar>::value > {};
+	
 	static constexpr bool isScalarComplex = IsComplexScalar<Scalar>::value;
 	static constexpr bool isVector = isRowVector or isColVector;
 	
@@ -46,11 +53,11 @@ public:
 	
 	Matrix(const Matrix& other) : m_data(other.m_data) {}
 	
-	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(1., *this, std::false_type{}); }
+	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(Scalar(1), *this, std::false_type{}); }
 	
-	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (1., *this, std::true_type{}); return *this; }
-	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (1., *this, std::true_type{}); return *this; }
-	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (1., *this, std::true_type{}); return *this; }
+	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (Scalar(1), *this, std::true_type{}); return *this; }
+	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (Scalar(1), *this, std::true_type{}); return *this; }
+	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (Scalar(1), *this, std::true_type{}); return *this; }
 	
 	Matrix& operator*=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
 	Matrix& operator/=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }
@@ -64,8 +71,8 @@ public:
 	const_ReturnType getImpl(const Size i, const Size j) const { return m_data[i*nCols + j]; }
 	      ReturnType getImpl(const Size i, const Size j)       { return m_data[i*nCols + j]; }
 	      
-	template<class Dst>           bool isAliasedToImpl(const MatrixBase<Dst>& dst) const requires(nRows == Dst::nRows and nCols == Dst::nCols) { return std::addressof(dst.derived()) == this; }
-	template<class Dst> constexpr bool isAliasedToImpl(const MatrixBase<Dst>&    ) const requires(nRows != Dst::nRows or  nCols != Dst::nCols) { return false; }
+	template<class Dst>           bool isAliasedToImpl(const MatrixBase<Dst>& dst) const requires(    CanBeAlisaedTo<Dst>::value) { return std::addressof(dst.derived()) == this; }
+	template<class Dst> constexpr bool isAliasedToImpl(const MatrixBase<Dst>&    ) const requires(not CanBeAlisaedTo<Dst>::value) { return false; }
 private:
 	std::array<Scalar, size> m_data;
 };

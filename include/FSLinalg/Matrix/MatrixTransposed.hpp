@@ -49,9 +49,9 @@ public:
 	const_ReturnType getImpl(const Size i) const requires(hasReadRandomAccess  and hasFlatRandomAccess) { return m_expr.getImpl(i); }
 	      ReturnType getImpl(const Size i)       requires(hasWriteRandomAccess and hasFlatRandomAccess) { return m_expr.getImpl(i); }
 
-	template<class SrcExpr> MatrixTransposed& operator= (const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.assignTo  (1., *this, std::true_type{}); return *this; }
-	template<class SrcExpr> MatrixTransposed& operator+=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.increment (1., *this, std::true_type{}); return *this; }
-	template<class SrcExpr> MatrixTransposed& operator-=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.decrement (1., *this, std::true_type{}); return *this; }
+	template<class SrcExpr> MatrixTransposed& operator= (const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.assignTo  (Scalar(1), *this, std::true_type{}); return *this; }
+	template<class SrcExpr> MatrixTransposed& operator+=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.increment (Scalar(1), *this, std::true_type{}); return *this; }
+	template<class SrcExpr> MatrixTransposed& operator-=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.decrement (Scalar(1), *this, std::true_type{}); return *this; }
 	
 	MatrixTransposed& operator*=(const RealScalar& alpha) requires(isScalarComplex);
 	MatrixTransposed& operator/=(const RealScalar& alpha) requires(isScalarComplex);

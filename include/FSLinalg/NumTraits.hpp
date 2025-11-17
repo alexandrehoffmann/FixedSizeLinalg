@@ -38,9 +38,9 @@ struct NumTraits< std::complex<T> >
 //// for unit vectors
 
 template<>
-struct NumTraits<uint8_t>
+struct NumTraits<int>
 {
-	using Real = uint8_t;
+	using Real = int;
 	
 	static constexpr bool isComplex = false;
 	static constexpr Real epsilon   = std::numeric_limits<uint8_t>::epsilon();
