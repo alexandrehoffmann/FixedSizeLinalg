@@ -8,79 +8,110 @@ namespace FSLinalg
 {
 
 template<class Lhs, class Rhs> 
-template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixProduct<Lhs,Rhs>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+constexpr bool MatrixProduct<Lhs,Rhs>::isOptimallyBracked()
 {
-	using GemmAssign = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, false>;
-	
-	StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
-	StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
-	
-	const auto beta      = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
-	const StrippedLhs& A = strippedLhs.getMatrix();
-	const StrippedRhs& B = strippedRhs.getMatrix();
-	
-	if (checkAliasing and (A.isAliasedTo(dst) or B.isAliasedTo(dst)))
+	using OptimallyBracketedSelf = typename MatrixProductAnalyzer<Self>::OptimalBracketing;
+	return std::is_same<Self, OptimallyBracketedSelf>::value;
+}
+
+template<class Lhs, class Rhs> 
+template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
+void MatrixProduct<Lhs,Rhs>::assignToHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> checkAliasing_ic, std::bool_constant<keepBracketing>) const 
+	requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+{
+	if constexpr (isOptimallyBracked() or keepBracketing)
 	{
-		Matrix<typename Dst::Scalar, Dst::nRows, Dst::nCols> tmp(dst);
-		GemmAssign::run(beta, A, B, tmp);
-		for (Size i=0; i!=size; ++i) { dst[i] = tmp[i]; }
+		using GemmAssign = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, false>;
+		
+		StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
+		StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
+		
+		const auto beta      = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
+		const StrippedLhs& A = strippedLhs.getMatrix();
+		const StrippedRhs& B = strippedRhs.getMatrix();
+		
+		if (checkAliasing and (A.isAliasedTo(dst) or B.isAliasedTo(dst)))
+		{
+			Matrix<typename Dst::Scalar, Dst::nRows, Dst::nCols> tmp(dst);
+			GemmAssign::run(beta, A, B, tmp);
+			for (Size i=0; i!=size; ++i) { dst[i] = tmp[i]; }
+		}
+		else
+		{
+			GemmAssign::run(beta, A, B, dst.derived());
+		}
 	}
 	else
 	{
-		GemmAssign::run(beta, A, B, dst.derived());
+		MatrixProductAnalyzer<Self>::reBracket(*this).assignToImpl(alpha, dst, checkAliasing_ic);
 	}
 }
 
 template<class Lhs, class Rhs> 
-template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixProduct<Lhs,Rhs>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
-{
-	using GemmAssign    = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, false>;
-	using GemmIncrement = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, true>;
-	
-	StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
-	StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
-	
-	const auto beta      = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
-	const StrippedLhs& A = strippedLhs.getMatrix();
-	const StrippedRhs& B = strippedRhs.getMatrix();
-	
-	if (checkAliasing and (A.isAliasedTo(dst) or B.isAliasedTo(dst)))
+template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
+void MatrixProduct<Lhs,Rhs>::incrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> checkAliasing_ic, std::bool_constant<keepBracketing>) const 
+	requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+{	
+	if constexpr (isOptimallyBracked() or keepBracketing)
 	{
-		Matrix<typename Dst::Scalar, Dst::nRows, Dst::nCols> tmp(dst);
-		GemmAssign::run(beta, A, B, tmp);
-		for (Size i=0; i!=size; ++i) { dst[i] += tmp[i]; }
+		using GemmAssign    = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, false>;
+		using GemmIncrement = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, true>;
+		
+		StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
+		StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
+		
+		const auto beta      = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
+		const StrippedLhs& A = strippedLhs.getMatrix();
+		const StrippedRhs& B = strippedRhs.getMatrix();
+		
+		if (checkAliasing and (A.isAliasedTo(dst) or B.isAliasedTo(dst)))
+		{
+			Matrix<typename Dst::Scalar, Dst::nRows, Dst::nCols> tmp(dst);
+			GemmAssign::run(beta, A, B, tmp);
+			for (Size i=0; i!=size; ++i) { dst[i] += tmp[i]; }
+		}
+		else
+		{
+			GemmIncrement::run(beta, A, B, dst.derived());
+		}
 	}
 	else
 	{
-		GemmIncrement::run(beta, A, B, dst.derived());
+		MatrixProductAnalyzer<Self>::reBracket(*this).incrementImpl(alpha, dst, checkAliasing_ic);
 	}
 }
 
 template<class Lhs, class Rhs> 
-template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixProduct<Lhs,Rhs>::decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
+void MatrixProduct<Lhs,Rhs>::decrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> checkAliasing_ic, std::bool_constant<keepBracketing>) const 
+	requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
-	using GemmAssign    = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, false>;
-	using GemmIncrement = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, true>;
-	
-	StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
-	StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
-	
-	const auto beta     = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
-	const StrippedLhs& A = strippedLhs.getMatrix();
-	const StrippedRhs& B = strippedRhs.getMatrix();
-	
-	if (checkAliasing and (A.isAliasedTo(dst) or B.isAliasedTo(dst)))
+	if constexpr (isOptimallyBracked() or keepBracketing)
 	{
-		Matrix<typename Dst::Scalar, Dst::nRows, Dst::nCols> tmp(dst);
-		GemmAssign::run(beta, A, B, tmp);
-		for (Size i=0; i!=size; ++i) { dst[i] -= tmp[i]; }
+		using GemmAssign    = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, false>;
+		using GemmIncrement = BasicLinalg::GeneralMatrixMatrixProduct<isLhsTransposed, isLhsConjugated, LhsNRows, LhsNCols, isRhsTransposed, isRhsConjugated, RhsNRows, RhsNCols, true>;
+		
+		StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
+		StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
+		
+		const auto beta     = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
+		const StrippedLhs& A = strippedLhs.getMatrix();
+		const StrippedRhs& B = strippedRhs.getMatrix();
+		
+		if (checkAliasing and (A.isAliasedTo(dst) or B.isAliasedTo(dst)))
+		{
+			Matrix<typename Dst::Scalar, Dst::nRows, Dst::nCols> tmp(dst);
+			GemmAssign::run(beta, A, B, tmp);
+			for (Size i=0; i!=size; ++i) { dst[i] -= tmp[i]; }
+		}
+		else
+		{
+			GemmIncrement::run(-beta, A, B, dst.derived());
+		}
 	}
 	else
 	{
-		GemmIncrement::run(-beta, A, B, dst.derived());
+		MatrixProductAnalyzer<Self>::reBracket(*this).decrementImpl(alpha, dst, checkAliasing_ic);
 	}
 }
 

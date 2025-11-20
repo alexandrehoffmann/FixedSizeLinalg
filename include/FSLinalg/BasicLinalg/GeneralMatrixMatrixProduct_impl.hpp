@@ -18,25 +18,26 @@ void GeneralMatrixMatrixProduct<transposeA,conjugateA,nRowsA,nColsA,transposeB,c
 	const Matrix<ScalarB,nRowsB,nColsB>& B, 
 	      Matrix<ScalarY,nRowsY,nColsY>& Y)
 {
+	using ScaledA = decltype(std::declval<ScalarAlpha>()*std::declval<ScalarA>());
+	
 	constexpr Size A_iStride = (not transposeA) ? nColsA : 1;
 	constexpr Size A_kStride = (not transposeA) ?      1 : nColsA;
 	constexpr Size B_kStride = (not transposeB) ? nColsB : 1;
 	constexpr Size B_jStride = (not transposeB) ?      1 : nColsB;
 	
-	constexpr TripleProduct<false, conjugateA, conjugateB> prod;
+	constexpr Product<false, conjugateA> prodA;
+	constexpr Product<false, conjugateB> prodB;
 	
-	if constexpr (not incrDst)
-	{
-		for (Size i=0; i!=nRowsY*nColsY; ++i) { Y[i] = 0; }
-	}
+	if constexpr (not incrDst) { Y.setZero(); }
 	
 	for (Size i=0; i!=nRowsY; ++i)
 	{
 		for (Size k=0; k !=nColsOpA; ++k)
 		{
+			ScaledA alphaA = prodA(alpha, A[i*A_iStride + k*A_kStride]);
 			for (Size j=0; j!=nColsY; ++j)
 			{
-				Y(i,j) += prod(alpha, A[i*A_iStride + k*A_kStride], B[k*B_kStride + j*B_jStride]);
+				Y(i,j) += prodB(alphaA, B[k*B_kStride + j*B_jStride]);
 			}
 		}
 	}
@@ -55,10 +56,7 @@ void GeneralMatrixMatrixProduct<transposeA,conjugateA,nRowsA,nColsA,transposeB,c
 	
 	constexpr Product<false, conjugateA> prod;
 	
-	if constexpr (not incrDst)
-	{
-		for (Size i=0; i!=nRowsY*nColsY; ++i) { Y[i] = 0; }
-	}
+	if constexpr (not incrDst) { Y.setZero(); }
 	
 	const Size k = (not transposeB) ? B.getId().i : B.getId().j;
 	const Size j = (not transposeB) ? B.getId().j : B.getId().i;
@@ -82,10 +80,7 @@ void GeneralMatrixMatrixProduct<transposeA,conjugateA,nRowsA,nColsA,transposeB,c
 	
 	constexpr Product<false, conjugateB> prod;
 	
-	if constexpr (not incrDst)
-	{
-		for (Size i=0; i!=nRowsY*nColsY; ++i) { Y[i] = 0; }
-	}
+	if constexpr (not incrDst) { Y.setZero(); }
 	
 	const Size i = (not transposeA) ? A.getId().i : A.getId().j;
 	const Size k = (not transposeA) ? A.getId().j : A.getId().i;
@@ -105,10 +100,7 @@ void GeneralMatrixMatrixProduct<transposeA,conjugateA,nRowsA,nColsA,transposeB,c
 	const UnitMatrix<nRowsB,nColsB>&     B, 
 	      Matrix<ScalarY,nRowsY,nColsY>& Y)
 {	
-	if constexpr (not incrDst)
-	{
-		for (Size i=0; i!=nRowsY*nColsY; ++i) { Y[i] = 0; }
-	}
+	if constexpr (not incrDst) { Y.setZero(); }
 	
 	const Size i  = (not transposeA) ? A.getId().i : A.getId().j;
 	const Size j  = (not transposeB) ? B.getId().j : B.getId().i;

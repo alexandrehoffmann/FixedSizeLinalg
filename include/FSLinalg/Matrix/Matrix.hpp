@@ -65,6 +65,8 @@ public:
 	Matrix& operator*=(const Scalar& alpha) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
 	Matrix& operator/=(const Scalar& alpha) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }
 	
+	void setZero() { m_data.fill(Scalar(0)); }
+	
 	const_ReturnType getImpl(const Size i) const { return m_data[i]; }
 	      ReturnType getImpl(const Size i)       { return m_data[i]; }
 	      
@@ -73,6 +75,11 @@ public:
 	      
 	template<class Dst>           bool isAliasedToImpl(const MatrixBase<Dst>& dst) const requires(    CanBeAlisaedTo<Dst>::value) { return std::addressof(dst.derived()) == this; }
 	template<class Dst> constexpr bool isAliasedToImpl(const MatrixBase<Dst>&    ) const requires(not CanBeAlisaedTo<Dst>::value) { return false; }
+	
+	static Matrix zero()   { return Matrix(Scalar(0)); }
+	static Matrix ones()   { return Matrix(Scalar(1)); }
+	
+	static Matrix random(const RealScalar& lb, const RealScalar& ub);
 private:
 	std::array<Scalar, size> m_data;
 };

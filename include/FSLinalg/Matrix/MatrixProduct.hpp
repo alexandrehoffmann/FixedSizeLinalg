@@ -17,6 +17,7 @@ template<class Expr> struct MatrixProductAnalyzerImpl;
 } // namespace detail
 
 template<class Lhs, class Rhs> class MatrixProduct;
+template<class Expr>           class KeepBrackets;
 
 template<class Lhs, class Rhs>
 struct MatrixTraits< MatrixProduct<Lhs, Rhs> >
@@ -44,15 +45,15 @@ public:
 	using Self = MatrixProduct<Lhs,Rhs>;
 	FSLINALG_DEFINE_MATRIX
 	
-	using OptimallyBracketedSelf = MatrixProductAnalyzer<Self>;
-	
 	friend struct detail::MatrixProductAnalyzerImpl< Self >;
+	friend class KeepBrackets< Self >;
 	
 	MatrixProduct(const MatrixBase<Lhs>& lhs, const MatrixBase<Rhs>& rhs) : m_lhs(lhs.derived()), m_rhs(rhs.derived()) {}
 	
 	static constexpr bool createTemporaryLhs = StripSymbolsAndEvalMatrix<Lhs>::createsTemporary;
 	static constexpr bool createTemporaryRhs = StripSymbolsAndEvalMatrix<Rhs>::createsTemporary;
-	static constexpr bool isOptimallyBracked = std::is_same<Self, OptimallyBracketedSelf>::value;
+	
+	static constexpr bool isOptimallyBracked();
 	
 	/**
 	 * @brief Only awailable when multiplying row-vector and col-vector
@@ -63,14 +64,23 @@ public:
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_lhs.isAliasedToImpl(other) or m_rhs.isAliasedToImpl(other); }
 
 	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { assignToHelper(alpha, dst, bc, std::false_type{}); }
 	
 	template<typename Alpha, class Dst, bool checkAliasing>
-	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { incrementHelper(alpha, dst, bc, std::false_type{}); }
 	
 	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { decrementHelper(alpha, dst, bc, std::false_type{}); }
 private:
+	template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
+	void assignToHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>, std::bool_constant<keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	
+	template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
+	void incrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>, std::bool_constant<keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	
+	template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
+	void decrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>, std::bool_constant<keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+
 	using StrippedLhs = typename StripSymbolsAndEvalMatrix<Lhs>::Matrix;
 	using StrippedRhs = typename StripSymbolsAndEvalMatrix<Rhs>::Matrix;
 	

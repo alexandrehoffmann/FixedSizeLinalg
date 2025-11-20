@@ -26,7 +26,7 @@ TEST(chain, trivial)
 		
 		EXPECT_EQ(dims, DimArray({6, 5, 1}));
 		
-		EXPECT_EQ(ProdAnalyzer::getMinalCost(), 30);
+		EXPECT_EQ(ProdAnalyzer::getOptimalCost(), 30);
 		EXPECT_EQ(ProdAnalyzer::getOptimalSplit(), 1);
 		
 		constexpr bool b1 = std::is_same<std::decay_t<decltype(expr)>, typename ProdAnalyzer::OptimalBracketing>::value;
@@ -47,7 +47,7 @@ TEST(chain, trivial)
 		
 		EXPECT_EQ(dims, DimArray({5, 6, 1}));
 		
-		EXPECT_EQ(ProdAnalyzer::getMinalCost(), 30);
+		EXPECT_EQ(ProdAnalyzer::getOptimalCost(), 30);
 		EXPECT_EQ(ProdAnalyzer::getOptimalSplit(), 1);
 		
 		constexpr bool b1 = std::is_same<std::decay_t<decltype(expr)>, typename ProdAnalyzer::OptimalBracketing>::value;
@@ -71,7 +71,7 @@ TEST(chain, noBracketing)
 	constexpr DimArray dims = ProdAnalyzer::getDims();
 	
 	EXPECT_EQ(dims, DimArray({1, 3, 1, 4, 1, 3, 1}));
-	EXPECT_EQ(ProdAnalyzer::getMinalCost(), 12);
+	EXPECT_EQ(ProdAnalyzer::getOptimalCost(), 12);
 	EXPECT_EQ(ProdAnalyzer::getOptimalSplit(), 2);
 	
 	using ExpectedExpr = decltype( (FSLinalg::transpose(a)*a)*((FSLinalg::transpose(e0)*e0)*(FSLinalg::transpose(a)*a)) );
@@ -105,7 +105,7 @@ TEST(chain, wrongBracketing)
 	constexpr DimArray dims = ProdAnalyzer::getDims();
 	
 	EXPECT_EQ(dims, DimArray({1, 3, 1, 4, 1, 3, 1}));
-	EXPECT_EQ(ProdAnalyzer::getMinalCost(), 12);
+	EXPECT_EQ(ProdAnalyzer::getOptimalCost(), 12);
 	EXPECT_EQ(ProdAnalyzer::getOptimalSplit(), 2);
 	
 	using ExpectedExpr = decltype( (FSLinalg::transpose(a)*a)*((FSLinalg::transpose(e0)*e0)*(FSLinalg::transpose(a)*a)) );
@@ -174,8 +174,7 @@ TEST(chain, general)
 		{11554, 33154},
 		{18002, 49937},
 		{11252, 31636},
-		{18864, 54785},
-	});
+		{18864, 54785}});
 	
 	const auto expr = A*B*C*D;
 	const FSLinalg::RealMatrix<12,2> result = expr;
@@ -185,24 +184,27 @@ TEST(chain, general)
 	using ProdAnalyzer = FSLinalg::MatrixProductAnalyzer<std::decay_t<decltype(expr)>>;
 	using DimArray     = typename ProdAnalyzer::DimArray;
 	
-	EXPECT_FALSE(expr.isOptimallyBracked);
+	EXPECT_FALSE(expr.isOptimallyBracked());
+	EXPECT_TRUE(ProdAnalyzer::reBracket(expr).isOptimallyBracked());
 	
 	// A*B*C*D // automatic re-bracketing
 	// (A*B*C*D).reBracket()
-	// noReBracket(A*B*C*D)
+	// keepBracketing(A*B*C*D)
 	EXPECT_EQ(ProdAnalyzer::getLength(), 4);
 	
 	constexpr DimArray dims = ProdAnalyzer::getDims();
 	
 	EXPECT_EQ(dims, DimArray({12, 3, 8, 5, 2}));
-	EXPECT_EQ(ProdAnalyzer::getMinalCost(), 200);
+	EXPECT_EQ(ProdAnalyzer::getOptimalCost(), 200);
 	EXPECT_EQ(ProdAnalyzer::getOptimalSplit(), 1);
 	
 	using ReBracketType = typename ProdAnalyzer::ReBracketType;
 	
-	ReBracketType rebrackedExpr = ProdAnalyzer::reBracket(A*B*C*D);
+	ReBracketType rebrackedExpr = ProdAnalyzer::reBracket(expr);
 	
+	const FSLinalg::RealMatrix<12,2> result2 = FSLinalg::keepBrackets(expr);
 	const FSLinalg::RealMatrix<12,2> rebrackedResult = rebrackedExpr;
 	
+	EXPECT_EQ(expected, result2);
 	EXPECT_EQ(expected, rebrackedResult);
 }

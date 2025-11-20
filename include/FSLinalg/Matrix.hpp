@@ -6,6 +6,7 @@
 #include <FSLinalg/Matrix/MatrixSub.hpp>
 #include <FSLinalg/Matrix/MatrixSum.hpp>
 #include <FSLinalg/Matrix/MatrixProduct.hpp>
+#include <FSLinalg/Matrix/KeepBrackets.hpp>
 #include <FSLinalg/Matrix/MatrixTransposed.hpp>
 #include <FSLinalg/Matrix/VectorCross.hpp>
 #include <FSLinalg/Matrix/StripSymbolsAndEvalMatrix.hpp>

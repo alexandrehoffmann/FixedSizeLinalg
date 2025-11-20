@@ -83,8 +83,8 @@ struct MatrixProductAnalyzer
 	// we use an external template class as to not recompute everything for every product
 	// if the optimal splitting for an chain with the same dims has already been computed 
 	// we can re-use it.
-	static constexpr size_t getMinalCost()    { return MatrixProductChain<getDims()>::template minCostAndSplit<0, getLength()>.first;  }
-	static constexpr size_t getOptimalSplit() { return MatrixProductChain<getDims()>::template minCostAndSplit<0, getLength()>.second; }
+	static constexpr size_t getOptimalCost  () { return MatrixProductChain<getDims()>::template minCostAndSplit<0, getLength()>.first;  }
+	static constexpr size_t getOptimalSplit () { return MatrixProductChain<getDims()>::template minCostAndSplit<0, getLength()>.second; }
 private:
 	template<size_t start, size_t end> requires(start <= end and end <= getLength())
 	struct OptimalBracketingHelper

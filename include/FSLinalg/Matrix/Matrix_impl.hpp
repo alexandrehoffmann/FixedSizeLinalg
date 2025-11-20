@@ -4,6 +4,7 @@
 #include <FSLinalg/Matrix/Matrix.hpp>
 
 #include <cassert>
+#include <random>
 
 namespace FSLinalg
 {
@@ -38,6 +39,20 @@ Matrix<T,Nrows,Ncols>::Matrix(std::initializer_list< std::initializer_list<Scala
 		std::copy(std::cbegin(row_values), std::cend(row_values), it_data);
 		it_data += nCols;
 	}
+}
+
+template<typename T, unsigned int Nrows, unsigned Ncols>
+Matrix<T,Nrows,Ncols> Matrix<T,Nrows,Ncols>::random(const RealScalar& lb, const RealScalar& ub)
+{
+	std::random_device rd; 
+	std::mt19937 gen(rd()); 
+	std::uniform_real_distribution<RealScalar> dist(lb, ub);
+	
+	Matrix ret;
+	
+	for (Size i=0; i!=size; ++i) { ret[i] = dist(gen); }
+	
+	return ret;
 }
 
 } // namespace FSLinalg
