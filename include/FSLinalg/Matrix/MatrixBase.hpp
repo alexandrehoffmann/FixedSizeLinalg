@@ -24,13 +24,13 @@ public:
 	using Size             = typename DerivedTraits::Size;
 	
 	template<class Dst> 
-	struct IsConvertibleTo : std::bool_constant<
+	struct IsConvertibleTo : BIC::Fixed<bool, 
 		    std::is_base_of<MatrixBase<Dst>, Dst>::value 
 		and Dst::hasWriteRandomAccess
 		and std::is_convertible<Scalar, typename Dst::Scalar>::value> {};
 		
 	template<class Src> 
-	struct IsConstructibleFrom : std::bool_constant<
+	struct IsConstructibleFrom : BIC::Fixed<bool, 
 		    std::is_base_of<MatrixBase<Src>, Src>::value 
 		and DerivedTraits::hasWriteRandomAccess
 		and std::is_convertible<typename Src::Scalar, Scalar>::value> {};
@@ -61,17 +61,17 @@ public:
 
 	template<class Dst> bool isAliasedTo(const MatrixBase<Dst>& other) const { return Base::derived().isAliasedToImpl(other); }
 
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignTo(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst>
+	void assignTo(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void increment(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst>
+	void increment(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrement(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst>
+	void decrement(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 };
 
-template<typename Expr> struct IsMatrix : std::bool_constant< std::is_base_of<MatrixBase<Expr>, Expr>::value > {};
+template<typename Expr> struct IsMatrix : BIC::Fixed<bool,  std::is_base_of<MatrixBase<Expr>, Expr>::value > {};
 
 template<typename Expr> concept Matrix_concept         = IsMatrix<Expr>::value;
 template<typename Expr> concept ReadableMatrix_concept = IsMatrix<Expr>::value and Expr::hasReadRandomAccess;

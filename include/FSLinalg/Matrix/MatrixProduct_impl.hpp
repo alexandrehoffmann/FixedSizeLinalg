@@ -15,8 +15,8 @@ constexpr bool MatrixProduct<Lhs,Rhs>::isOptimallyBracked()
 }
 
 template<class Lhs, class Rhs> 
-template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
-void MatrixProduct<Lhs,Rhs>::assignToHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> checkAliasing_ic, std::bool_constant<keepBracketing>) const 
+template<typename Bool, typename Alpha, class Dst, bool keepBracketing>
+void MatrixProduct<Lhs,Rhs>::assignToHelper(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst, BIC::Fixed<bool, keepBracketing>) const 
 	requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	if constexpr (isOptimallyBracked() or keepBracketing)
@@ -43,13 +43,13 @@ void MatrixProduct<Lhs,Rhs>::assignToHelper(const Alpha& alpha, MatrixBase<Dst>&
 	}
 	else
 	{
-		MatrixProductAnalyzer<Self>::reBracket(*this).assignToImpl(alpha, dst, checkAliasing_ic);
+		MatrixProductAnalyzer<Self>::reBracket(*this).assignToImpl(checkAliasing, alpha, dst);
 	}
 }
 
 template<class Lhs, class Rhs> 
-template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
-void MatrixProduct<Lhs,Rhs>::incrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> checkAliasing_ic, std::bool_constant<keepBracketing>) const 
+template<typename Bool, typename Alpha, class Dst, bool keepBracketing>
+void MatrixProduct<Lhs,Rhs>::incrementHelper(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst, BIC::Fixed<bool, keepBracketing>) const 
 	requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {	
 	if constexpr (isOptimallyBracked() or keepBracketing)
@@ -77,13 +77,13 @@ void MatrixProduct<Lhs,Rhs>::incrementHelper(const Alpha& alpha, MatrixBase<Dst>
 	}
 	else
 	{
-		MatrixProductAnalyzer<Self>::reBracket(*this).incrementImpl(alpha, dst, checkAliasing_ic);
+		MatrixProductAnalyzer<Self>::reBracket(*this).incrementImpl(checkAliasing, alpha, dst);
 	}
 }
 
 template<class Lhs, class Rhs> 
-template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
-void MatrixProduct<Lhs,Rhs>::decrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> checkAliasing_ic, std::bool_constant<keepBracketing>) const 
+template<typename Bool, typename Alpha, class Dst, bool keepBracketing>
+void MatrixProduct<Lhs,Rhs>::decrementHelper(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst, BIC::Fixed<bool, keepBracketing>) const 
 	requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	if constexpr (isOptimallyBracked() or keepBracketing)
@@ -111,7 +111,7 @@ void MatrixProduct<Lhs,Rhs>::decrementHelper(const Alpha& alpha, MatrixBase<Dst>
 	}
 	else
 	{
-		MatrixProductAnalyzer<Self>::reBracket(*this).decrementImpl(alpha, dst, checkAliasing_ic);
+		MatrixProductAnalyzer<Self>::reBracket(*this).decrementImpl(checkAliasing, alpha, dst);
 	}
 }
 

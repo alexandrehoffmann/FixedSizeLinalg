@@ -4,6 +4,8 @@
 #include <complex>
 #include <type_traits>
 
+#include <BIC/Core.hpp>
+
 #include <FSLinalg/NumTraits.hpp>
 
 namespace FSLinalg
@@ -13,9 +15,9 @@ template<typename T> concept        Scalar_concept = requires { typename NumTrai
 template<typename T> concept    RealScalar_concept = Scalar_concept<T> and (not NumTraits<T>::isComplex);
 template<typename T> concept ComplexScalar_concept = Scalar_concept<T> and      NumTraits<T>::isComplex;
 
-template<typename T> struct IsScalar        : std::bool_constant< Scalar_concept<T> > {};
-template<typename T> struct IsRealScalar    : std::bool_constant< RealScalar_concept<T> > {};
-template<typename T> struct IsComplexScalar : std::bool_constant< ComplexScalar_concept<T> > {};
+template<typename T> struct IsScalar        : BIC::Fixed<bool, Scalar_concept<T> > {};
+template<typename T> struct IsRealScalar    : BIC::Fixed<bool, RealScalar_concept<T> > {};
+template<typename T> struct IsComplexScalar : BIC::Fixed<bool, ComplexScalar_concept<T> > {};
 
 template<RealScalar_concept T> constexpr const T& real (const T& v) { return v;           }
 template<RealScalar_concept T> constexpr       T  imag (const T&  ) { return 0;           }

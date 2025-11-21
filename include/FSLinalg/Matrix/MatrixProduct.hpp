@@ -63,23 +63,23 @@ public:
 	
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_lhs.isAliasedToImpl(other) or m_rhs.isAliasedToImpl(other); }
 
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { assignToHelper(alpha, dst, bc, std::false_type{}); }
+	template<typename Bool, typename Alpha, class Dst>
+	void assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { assignToHelper(checkAliasing, alpha, dst, BIC::fixed<bool, false>); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { incrementHelper(alpha, dst, bc, std::false_type{}); }
+	template<typename Bool, typename Alpha, class Dst>
+	void incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { incrementHelper(checkAliasing, alpha, dst, BIC::fixed<bool, false>); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { decrementHelper(alpha, dst, bc, std::false_type{}); }
+	template<typename Bool, typename Alpha, class Dst>
+	void decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { decrementHelper(checkAliasing, alpha, dst, BIC::fixed<bool, false>); }
 private:
-	template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
-	void assignToHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>, std::bool_constant<keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst, bool keepBracketing>
+	void assignToHelper(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst, BIC::Fixed<bool, keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 	
-	template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
-	void incrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>, std::bool_constant<keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst, bool keepBracketing>
+	void incrementHelper(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst, BIC::Fixed<bool, keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 	
-	template<typename Alpha, class Dst, bool checkAliasing, bool keepBracketing>
-	void decrementHelper(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>, std::bool_constant<keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst, bool keepBracketing>
+	void decrementHelper(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst, BIC::Fixed<bool, keepBracketing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 
 	using StrippedLhs = typename StripSymbolsAndEvalMatrix<Lhs>::Matrix;
 	using StrippedRhs = typename StripSymbolsAndEvalMatrix<Rhs>::Matrix;
@@ -99,8 +99,8 @@ private:
 	std::conditional_t<Rhs::isLeaf, const Rhs&, Rhs> m_rhs;
 };
 
-template<typename Expr>        struct IsMatrixProduct                           : std::false_type {};
-template<class Lhs, class Rhs> struct IsMatrixProduct< MatrixProduct<Lhs,Rhs> > : std::true_type  {};
+template<typename Expr>        struct IsMatrixProduct                           : BIC::Fixed<bool, false> {};
+template<class Lhs, class Rhs> struct IsMatrixProduct< MatrixProduct<Lhs,Rhs> > : BIC::Fixed<bool, true>  {};
 
 template<class Lhs, class Rhs> MatrixProduct<Lhs,Rhs> operator*(const MatrixBase<Lhs>& lhs, const MatrixBase<Rhs>& rhs) { return MatrixProduct<Lhs,Rhs>(lhs, rhs); }
 

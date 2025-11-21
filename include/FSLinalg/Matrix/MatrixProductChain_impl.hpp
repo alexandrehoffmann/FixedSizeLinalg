@@ -8,7 +8,7 @@ namespace FSLinalg
 {
 
 template<std::array dims> template<size_t i, size_t j>
-constexpr std::pair<size_t, size_t> MatrixProductChain<dims>::minMulCostAndSplitRec(std::integral_constant<size_t, i>, std::integral_constant<size_t, j>)
+constexpr std::pair<size_t, size_t> MatrixProductChain<dims>::minMulCostAndSplitRec(BIC::Fixed<size_t, i>, BIC::Fixed<size_t, j>)
 {
 	if constexpr (i + 1 == j) 
 	{ 

@@ -46,14 +46,14 @@ public:
 	
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_expr.isAliasedToImpl(other); }
 
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.assignTo(-alpha, dst, bc); }
+	template<typename Bool, typename Alpha, class Dst>
+	void assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.assignTo(checkAliasing, -alpha, dst); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.decrement(alpha, dst, bc); }
+	template<typename Bool, typename Alpha, class Dst>
+	void incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.decrement(checkAliasing, alpha, dst); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.increment(alpha, dst, bc); }
+	template<typename Bool, typename Alpha, class Dst>
+	void decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.increment(checkAliasing, alpha, dst); }
 private:
 	std::conditional_t<Expr::isLeaf, const Expr&, Expr> m_expr;
 }; 

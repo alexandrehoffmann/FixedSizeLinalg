@@ -34,7 +34,7 @@ public:
 	FSLINALG_DEFINE_MATRIX
 	
 	template<class Dst>
-	struct CanBeAlisaedTo : std::bool_constant< 
+	struct CanBeAlisaedTo : BIC::Fixed<bool,  
 		    IsMatrix<Dst>::value 
 		and Base::nRows == Dst::nRows
 		and Base::nCols == Dst::nCols
@@ -53,11 +53,11 @@ public:
 	
 	Matrix(const Matrix& other) : m_data(other.m_data) {}
 	
-	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(Scalar(1), *this, std::false_type{}); }
+	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(BIC::fixed<bool, false>, Scalar(1), *this); }
 	
-	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (Scalar(1), *this, std::true_type{}); return *this; }
-	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (Scalar(1), *this, std::true_type{}); return *this; }
-	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (Scalar(1), *this, std::true_type{}); return *this; }
+	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (BIC::fixed<bool, true>, Scalar(1), *this); return *this; }
+	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (BIC::fixed<bool, true>, Scalar(1), *this); return *this; }
+	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (BIC::fixed<bool, true>, Scalar(1), *this); return *this; }
 	
 	Matrix& operator*=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
 	Matrix& operator/=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }

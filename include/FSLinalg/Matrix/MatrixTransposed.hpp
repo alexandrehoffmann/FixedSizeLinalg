@@ -49,9 +49,9 @@ public:
 	const_ReturnType getImpl(const Size i) const requires(hasReadRandomAccess  and hasFlatRandomAccess) { return m_expr.getImpl(i); }
 	      ReturnType getImpl(const Size i)       requires(hasWriteRandomAccess and hasFlatRandomAccess) { return m_expr.getImpl(i); }
 
-	template<class SrcExpr> MatrixTransposed& operator= (const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.assignTo  (Scalar(1), *this, std::true_type{}); return *this; }
-	template<class SrcExpr> MatrixTransposed& operator+=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.increment (Scalar(1), *this, std::true_type{}); return *this; }
-	template<class SrcExpr> MatrixTransposed& operator-=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.decrement (Scalar(1), *this, std::true_type{}); return *this; }
+	template<class SrcExpr> MatrixTransposed& operator= (const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.assignTo  (Scalar(1), *this, BIC::fixed<bool, true>); return *this; }
+	template<class SrcExpr> MatrixTransposed& operator+=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.increment (Scalar(1), *this, BIC::fixed<bool, true>); return *this; }
+	template<class SrcExpr> MatrixTransposed& operator-=(const MatrixBase<SrcExpr>& srcExpr) requires(IsConstructibleFrom<SrcExpr>::value) { srcExpr.decrement (Scalar(1), *this, BIC::fixed<bool, true>); return *this; }
 	
 	MatrixTransposed& operator*=(const RealScalar& alpha) requires(isScalarComplex);
 	MatrixTransposed& operator/=(const RealScalar& alpha) requires(isScalarComplex);
@@ -61,14 +61,14 @@ public:
 
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_expr.isAliasedToImpl(other); }
 
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst>
+	void assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst>
+	void incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
+	template<typename Bool, typename Alpha, class Dst>
+	void decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);
 private:
 	std::conditional_t<Expr::isLeaf, const Expr&, Expr> m_expr;
 };

@@ -82,8 +82,8 @@ auto MatrixTransposed<Expr>::operator/=(const Scalar& alpha) -> MatrixTransposed
 	}
 }
 
-template<typename Expr>  template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixTransposed<Expr>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<typename Expr>  template<typename Bool, typename Alpha, class Dst>
+void MatrixTransposed<Expr>::assignToImpl(const Bool /* checkAliasing */, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	Matrix<Scalar, nCols, nRows> tmp(m_expr);
 	
@@ -96,8 +96,8 @@ void MatrixTransposed<Expr>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& d
 	}
 }
 	
-template<typename Expr>  template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixTransposed<Expr>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<typename Expr>  template<typename Bool, typename Alpha, class Dst>
+void MatrixTransposed<Expr>::incrementImpl(const Bool /* checkAliasing */, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	Matrix<Scalar, nCols, nRows> tmp(m_expr);
 	
@@ -110,8 +110,8 @@ void MatrixTransposed<Expr>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& 
 	}
 }
 	
-template<typename Expr> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixTransposed<Expr>::decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<typename Expr> template<typename Bool, typename Alpha, class Dst>
+void MatrixTransposed<Expr>::decrementImpl(const Bool /* checkAliasing */, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	Matrix<Scalar, nCols, nRows> tmp(m_expr);
 	

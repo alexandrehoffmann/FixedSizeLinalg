@@ -1,5 +1,5 @@
-#ifndef FSLINALG_KEEP_BRACKETING_HPP
-#define FSLINALG_KEEP_BRACKETING_HPP
+#ifndef FSLINALG_KEEP_BRACKETS_HPP
+#define FSLINALG_KEEP_BRACKETS_HPP
 
 #include <FSLinalg/Matrix/MatrixBase.hpp>
 #include <FSLinalg/Matrix/MatrixProduct.hpp>
@@ -44,14 +44,14 @@ public:
 	      
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_expr.isAliasedToImpl(other); }
 
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.assignToHelper(alpha, dst, bc, std::true_type{}); }
+	template<typename Bool, typename Alpha, class Dst>
+	void assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.assignToHelper(checkAliasing, alpha, dst, BIC::fixed<bool, true>); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.incrementHelper(alpha, dst, bc, std::true_type{}); }
+	template<typename Bool, typename Alpha, class Dst>
+	void incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.incrementHelper(checkAliasing, alpha, dst, BIC::fixed<bool, true>); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.decrementHelper(alpha, dst, bc, std::true_type{}); }
+	template<typename Bool, typename Alpha, class Dst>
+	void decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_expr.decrementHelper(checkAliasing, alpha, dst, BIC::fixed<bool, true>); }
 private:
 	std::conditional_t<Expr::isLeaf, const Expr&, Expr> m_expr;
 };
@@ -61,4 +61,4 @@ KeepBrackets<Expr> keepBrackets(const MatrixBase<Expr>& expr) { return KeepBrack
 	
 } // namespace FSLinalg
 
-#endif // FSLINALG_KEEP_BRACKETING_HPP
+#endif // FSLINALG_KEEP_BRACKETS_HPP

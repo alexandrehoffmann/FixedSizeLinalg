@@ -43,14 +43,14 @@ public:
 	
 	template<class Dst> bool isAliasedToImpl(const MatrixBase<Dst>& other) const { return m_lhs.isAliasedToImpl(other) or m_rhs.isAliasedToImpl(other); }
 
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)  { m_lhs.assignTo(alpha, dst, bc); m_rhs.increment(alpha, dst, bc); }
+	template<typename Bool, typename Alpha, class Dst>
+	void assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)  { m_lhs.assignTo(checkAliasing, alpha, dst); m_rhs.increment(checkAliasing, alpha, dst); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_lhs.increment(alpha, dst, bc); m_rhs.increment(alpha, dst, bc); }
+	template<typename Bool, typename Alpha, class Dst>
+	void incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_lhs.increment(checkAliasing, alpha, dst); m_rhs.increment(checkAliasing, alpha, dst); }
 	
-	template<typename Alpha, class Dst, bool checkAliasing>
-	void decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_lhs.decrement(alpha, dst, bc); m_rhs.decrement(alpha, dst, bc); }
+	template<typename Bool, typename Alpha, class Dst>
+	void decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value) { m_lhs.decrement(checkAliasing, alpha, dst); m_rhs.decrement(checkAliasing, alpha, dst); }
 private:
 	std::conditional_t<Lhs::isLeaf, const Lhs&, Lhs> m_lhs;
 	std::conditional_t<Rhs::isLeaf, const Rhs&, Rhs> m_rhs;

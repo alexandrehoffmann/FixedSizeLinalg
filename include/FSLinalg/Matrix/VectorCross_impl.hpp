@@ -30,8 +30,8 @@ void VectorCross<Lhs, Rhs>::decrementCross(const Alpha& alpha, const LhsVec& lhs
 	dst[2] -= alpha*(lhs[0]*rhs[1] - lhs[1]*rhs[0]);
 }
 
-template<class Lhs, class Rhs> template<typename Alpha, class Dst, bool checkAliasing>
-void VectorCross<Lhs, Rhs>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Lhs, class Rhs> template<typename Bool, typename Alpha, class Dst>
+void VectorCross<Lhs, Rhs>::assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {	
 	TmpLhs lhs(m_lhs);
 	TmpRhs rhs(m_rhs);
@@ -49,8 +49,8 @@ void VectorCross<Lhs, Rhs>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& ds
 	}
 }
 
-template<class Lhs, class Rhs> template<typename Alpha, class Dst, bool checkAliasing>
-void VectorCross<Lhs, Rhs>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Lhs, class Rhs> template<typename Bool, typename Alpha, class Dst>
+void VectorCross<Lhs, Rhs>::incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	TmpLhs lhs(m_lhs);
 	TmpRhs rhs(m_rhs);
@@ -68,8 +68,8 @@ void VectorCross<Lhs, Rhs>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& d
 	}
 }
 
-template<class Lhs, class Rhs> template<typename Alpha, class Dst, bool checkAliasing>
-void VectorCross<Lhs, Rhs>::decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing>) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Lhs, class Rhs> template<typename Bool, typename Alpha, class Dst>
+void VectorCross<Lhs, Rhs>::decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	TmpLhs lhs(m_lhs);
 	TmpRhs rhs(m_rhs);

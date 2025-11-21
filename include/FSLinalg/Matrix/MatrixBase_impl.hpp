@@ -7,8 +7,8 @@
 namespace FSLinalg
 {
 
-template<class Derived> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixBase<Derived>::assignTo(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Derived> template<typename Bool, typename Alpha, class Dst>
+void MatrixBase<Derived>::assignTo(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	static_assert(Dst::nRows == nRows, "Matrix sizes must match");
 	static_assert(Dst::nCols == nCols, "Matrix sizes must match");
@@ -42,12 +42,12 @@ void MatrixBase<Derived>::assignTo(const Alpha& alpha, MatrixBase<Dst>& dst, std
 	}
 	else
 	{
-		Base::derived().assignToImpl(alpha, dst, bc);
+		Base::derived().assignToImpl(checkAliasing, alpha, dst);
 	}
 }
 
-template<class Derived> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixBase<Derived>::increment(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Derived> template<typename Bool, typename Alpha, class Dst>
+void MatrixBase<Derived>::increment(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	static_assert(Dst::nRows == nRows, "Matrix sizes must match");
 	static_assert(Dst::nCols == nCols, "Matrix sizes must match");
@@ -81,12 +81,12 @@ void MatrixBase<Derived>::increment(const Alpha& alpha, MatrixBase<Dst>& dst, st
 	}
 	else
 	{
-		Base::derived().incrementImpl(alpha, dst, bc);
+		Base::derived().incrementImpl(checkAliasing, alpha, dst);
 	}
 }
 
-template<class Derived> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixBase<Derived>::decrement(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Derived> template<typename Bool, typename Alpha, class Dst>
+void MatrixBase<Derived>::decrement(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	static_assert(Dst::nRows == nRows, "Matrix sizes must match");
 	static_assert(Dst::nCols == nCols, "Matrix sizes must match");
@@ -120,7 +120,7 @@ void MatrixBase<Derived>::decrement(const Alpha& alpha, MatrixBase<Dst>& dst, st
 	}
 	else
 	{
-		Base::derived().decrementImpl(alpha, dst, bc);
+		Base::derived().decrementImpl(checkAliasing, alpha, dst);
 	}
 }
 

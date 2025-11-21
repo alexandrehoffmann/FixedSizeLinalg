@@ -52,6 +52,22 @@ option(FSLinalg_BUILD_TESTS "Build unit tests" OFF)
 # === Dependencies ===
 find_package(fmt REQUIRED)
 
+include(FetchContent)
+
+FetchContent_Declare(
+    BIC
+    GIT_REPOSITORY https://github.com/alexandrehoffmann/BetterIntegralConstant.git
+    GIT_TAG main
+)
+
+if(NOT BetterIntegralConstant_POPULATED)
+    message(STATUS "Fetching BetterIntegralConstant...")
+else()
+    message(STATUS "BetterIntegralConstant already available, skipping fetch")
+endif()
+
+FetchContent_MakeAvailable(BIC)
+
 # === Doxygen ===
 if(FSLinalg_BUILD_DOC)
     find_package(Doxygen REQUIRED dot)
@@ -105,7 +121,7 @@ target_include_directories(FSLinalg
         $<INSTALL_INTERFACE:include>
 )
 
-target_link_libraries(FSLinalg INTERFACE fmt::fmt)
+target_link_libraries(FSLinalg INTERFACE fmt::fmt BIC)
 
 target_compile_options(FSLinalg INTERFACE
     $<$<COMPILE_LANGUAGE:CXX>:${FSLinalg_COMPILE_WARNINGS}>

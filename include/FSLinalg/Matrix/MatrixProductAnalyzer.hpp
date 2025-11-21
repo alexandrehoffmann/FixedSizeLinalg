@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <type_traits>
 
+#include <BIC/Core.hpp>
+
 #include <FSLinalg/Matrix/MatrixProductChain.hpp>
 
 namespace FSLinalg
@@ -23,10 +25,10 @@ struct MatrixProductAnalyzerImpl
 	using NthMatrix = Expr;
 	
 	template<size_t n>
-	static constexpr const NthMatrix<n>& getMatrix(const Expr& expr, std::integral_constant<size_t, n>) { return expr; }
+	static constexpr const NthMatrix<n>& getMatrix(const Expr& expr, BIC::Fixed<size_t, n>) { return expr; }
 	
 	template<size_t idx, size_t chainLenP1> requires (idx+1 <chainLenP1) 
-	static constexpr void fillDims(std::integral_constant<size_t, idx>, std::array<size_t, chainLenP1>& dims) { dims[idx] = Expr::nRows; dims[idx+1] = Expr::nCols; }
+	static constexpr void fillDims(BIC::Fixed<size_t, idx>, std::array<size_t, chainLenP1>& dims) { dims[idx] = Expr::nRows; dims[idx+1] = Expr::nCols; }
 };
 
 template<class Lhs, class Rhs>
@@ -55,10 +57,10 @@ struct MatrixProductAnalyzerImpl< MatrixProduct<Lhs, Rhs> >
 	using NthMatrix = typename NthMatrixHelper<n>::Type;
 	
 	template<size_t n>
-	static constexpr const NthMatrix<n>& getMatrix(const MatrixProduct<Lhs, Rhs>& expr, std::integral_constant<size_t, n>);
+	static constexpr const NthMatrix<n>& getMatrix(const MatrixProduct<Lhs, Rhs>& expr, BIC::Fixed<size_t, n> fixed_n);
 
 	template<size_t idx, size_t chainLenP1> requires (idx+1 <chainLenP1) 
-	static constexpr void fillDims(std::integral_constant<size_t, idx>, std::array<size_t, chainLenP1>& dims);
+	static constexpr void fillDims(BIC::Fixed<size_t, idx> fixed_idx, std::array<size_t, chainLenP1>& dims);
 };
 
 } // namespace detail
@@ -74,7 +76,7 @@ struct MatrixProductAnalyzer
 	template<size_t n> using NthMatrix = typename Impl::template NthMatrix<n>;
 	
 	template<size_t n>
-	static const NthMatrix<n>& getMatrix(const Expr& expr, std::integral_constant<size_t, n> ic) { return Impl::getMatrix(expr, ic); }
+	static const NthMatrix<n>& getMatrix(const Expr& expr, BIC::Fixed<size_t, n> fixed_n) { return Impl::getMatrix(expr, fixed_n); }
 	
 	static constexpr size_t getLength() { return Impl::length; }
 	
@@ -111,7 +113,7 @@ private:
 		using Type          = NthMatrix<idx>;
 		using ReBracketType = const Type&;
 		
-		static ReBracketType reBracket(const Expr& expr) { return MatrixProductAnalyzer<Expr>::getMatrix(expr, std::integral_constant<size_t, idx>{}); }
+		static ReBracketType reBracket(const Expr& expr) { return MatrixProductAnalyzer<Expr>::getMatrix(expr, BIC::fixed<size_t, idx>); }
 	};
 public:
 	using OptimalBracketing = typename OptimalBracketingHelper<0, getLength()>::Type;

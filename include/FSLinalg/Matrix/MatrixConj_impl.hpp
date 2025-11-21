@@ -6,10 +6,10 @@
 namespace FSLinalg
 {
 
-template<class Expr> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixConj<Expr>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Expr> template<typename Bool, typename Alpha, class Dst>
+void MatrixConj<Expr>::assignToImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
-	m_expr.assignTo(conj(alpha), dst, bc);
+	m_expr.assignTo(checkAliasing, conj(alpha), dst);
 	if constexpr (IsComplexScalar<Scalar>::value)
 	{
 		if constexpr (Dst::hasFlatRandomAccess)
@@ -32,12 +32,12 @@ void MatrixConj<Expr>::assignToImpl(const Alpha& alpha, MatrixBase<Dst>& dst, st
 	}
 }
 	
-template<class Expr> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixConj<Expr>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Expr> template<typename Bool, typename Alpha, class Dst>
+void MatrixConj<Expr>::incrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	if constexpr (IsRealScalar<Scalar>::value)
 	{
-		m_expr.increment(alpha, dst, bc);
+		m_expr.increment(checkAliasing, alpha, dst);
 	}
 	else
 	{
@@ -62,12 +62,12 @@ void MatrixConj<Expr>::incrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, s
 	}
 }
 	
-template<class Expr> template<typename Alpha, class Dst, bool checkAliasing>
-void MatrixConj<Expr>::decrementImpl(const Alpha& alpha, MatrixBase<Dst>& dst, std::bool_constant<checkAliasing> bc) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
+template<class Expr> template<typename Bool, typename Alpha, class Dst>
+void MatrixConj<Expr>::decrementImpl(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value)
 {
 	if constexpr (IsRealScalar<Scalar>::value)
 	{
-		m_expr.decrement(alpha, dst, bc);
+		m_expr.decrement(checkAliasing, alpha, dst);
 	}
 	else
 	{
