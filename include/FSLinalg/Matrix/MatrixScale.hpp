@@ -38,7 +38,7 @@ public:
 	friend class StripSymbolsFromVectorOuterProduct<Self>; 
 	friend class StripSymbolsAndEvalMatrix<Self>; 
 	
-	MatrixScale(const Alpha& alpha, const MatrixBase<Expr>&  expr) : m_alpha(alpha), m_expr(expr.derived()) {}
+	MatrixScale(const Alpha& alpha, const MatrixBase<Expr>&  expr) : m_alpha(alpha), m_expr(expr.derived()) { }
 	
 	const_ReturnType getImpl(const Size i, const Size j) const requires(hasReadRandomAccess)  { return m_alpha*m_expr.getImpl(i, j); }
 
@@ -66,7 +66,7 @@ template<typename Alpha, class Expr>
 MatrixScale<Alpha, Expr> operator*(const MatrixBase<Expr>& expr, const Alpha& alpha) requires(IsScalar<Alpha>::value) { return MatrixScale<Alpha,Expr>(alpha, expr); }
 
 template<typename Alpha, class Expr> 
-MatrixScale<Alpha, Expr> operator/(const MatrixBase<Expr>& expr, const Alpha& alpha) requires(IsScalar<Alpha>::value) { return MatrixScale<Alpha,Expr>(1. / alpha, expr); }
+MatrixScale<Alpha, Expr> operator/(const MatrixBase<Expr>& expr, const Alpha& alpha) requires(IsScalar<Alpha>::value) { using RealScalar = typename NumTraits<Alpha>::Real; return MatrixScale<Alpha,Expr>(BIC::fixed<RealScalar, 1.> / alpha, expr); }
 
 } // namespace FSLinalg
 

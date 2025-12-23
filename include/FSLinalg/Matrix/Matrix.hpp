@@ -13,8 +13,8 @@ template<typename T, unsigned int Nrows, unsigned Ncols> class Matrix;
 template<typename T, unsigned int Nrows, unsigned Ncols>
 struct MatrixTraits< Matrix<T, Nrows, Ncols> >
 {	
-	using Scalar     = T;
-	using Size       = unsigned int;
+	using Scalar = T;
+	using Size   = unsigned int;
 	
 	static constexpr bool hasReadRandomAccess  = true;
 	static constexpr bool hasWriteRandomAccess = true;
@@ -45,7 +45,7 @@ public:
 	
 	Matrix(const RealScalar& value = RealScalar(0))  requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] = value; } }
 	Matrix(std::initializer_list< std::initializer_list<RealScalar> > values) requires(isScalarComplex);
-	Matrix(std::initializer_list<RealScalar> values) requires(isScalarComplex and isVector) : m_data(values) {}
+	Matrix(std::initializer_list<RealScalar> values) requires(isScalarComplex and isVector) { std::copy(std::cbegin(values), std::cend(values), std::begin(m_data)); }
 	
 	Matrix(const Scalar& value = Scalar(0)) { m_data.fill(value); }
 	Matrix(std::initializer_list< std::initializer_list<Scalar> > values);
@@ -53,11 +53,11 @@ public:
 	
 	Matrix(const Matrix& other) : m_data(other.m_data) {}
 	
-	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(BIC::fixed<bool, false>, Scalar(1), *this); }
+	template<class Expr> Matrix(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo(BIC::fixed<bool, false>, BIC::fixed<RealScalar, RealScalar(1)>, *this); }
 	
-	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (BIC::fixed<bool, true>, Scalar(1), *this); return *this; }
-	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (BIC::fixed<bool, true>, Scalar(1), *this); return *this; }
-	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (BIC::fixed<bool, true>, Scalar(1), *this); return *this; }
+	template<class Expr> Matrix& operator= (const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.assignTo  (BIC::fixed<bool, true>, BIC::fixed<RealScalar, RealScalar(1)>, *this); return *this; }
+	template<class Expr> Matrix& operator+=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.increment (BIC::fixed<bool, true>, BIC::fixed<RealScalar, RealScalar(1)>, *this); return *this; }
+	template<class Expr> Matrix& operator-=(const MatrixBase<Expr>& expr) requires(IsConstructibleFrom<Expr>::value) { expr.decrement (BIC::fixed<bool, true>, BIC::fixed<RealScalar, RealScalar(1)>, *this); return *this; }
 	
 	Matrix& operator*=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] *= alpha; } return *this; }
 	Matrix& operator/=(const RealScalar& alpha) requires(isScalarComplex) { for (Size i=0; i!=size; ++i) { m_data[i] /= alpha; } return *this; }
@@ -76,10 +76,10 @@ public:
 	template<class Dst>           bool isAliasedToImpl(const MatrixBase<Dst>& dst) const requires(    CanBeAlisaedTo<Dst>::value) { return std::addressof(dst.derived()) == this; }
 	template<class Dst> constexpr bool isAliasedToImpl(const MatrixBase<Dst>&    ) const requires(not CanBeAlisaedTo<Dst>::value) { return false; }
 	
-	static Matrix zero()   { return Matrix(Scalar(0)); }
-	static Matrix ones()   { return Matrix(Scalar(1)); }
+	static Matrix zero()   { return Matrix(RealScalar(0)); }
+	static Matrix ones()   { return Matrix(RealScalar(1)); }
 	
-	static Matrix random(const RealScalar& lb, const RealScalar& ub);
+	static Matrix random(const RealScalar& lb = RealScalar(-1), const RealScalar& ub = RealScalar(1));
 private:
 	std::array<Scalar, size> m_data;
 };

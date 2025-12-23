@@ -35,6 +35,18 @@ struct NumTraits< std::complex<T> >
 	static constexpr Real infinity  = std::numeric_limits<Real>::infinity();
 };
 
+template<typename T, T value>
+struct NumTraits< BIC::Fixed<T, value> >
+{
+	using Real = typename NumTraits<T>::Real;
+	
+	static constexpr bool isComplex = NumTraits<T>::isComplex;
+	static constexpr Real epsilon   = NumTraits<T>::epsilon;
+	static constexpr Real max       = NumTraits<T>::max;
+	static constexpr Real min       = NumTraits<T>::min;
+	static constexpr Real infinity  = NumTraits<T>::infinity;
+};
+
 //// for unit vectors
 
 template<>
@@ -43,10 +55,24 @@ struct NumTraits<int>
 	using Real = int;
 	
 	static constexpr bool isComplex = false;
-	static constexpr Real epsilon   = std::numeric_limits<uint8_t>::epsilon();
-	static constexpr Real max       = std::numeric_limits<uint8_t>::max();
-	static constexpr Real min       = std::numeric_limits<uint8_t>::min();
-	static constexpr Real infinity  = std::numeric_limits<uint8_t>::infinity();
+	static constexpr Real epsilon   = std::numeric_limits<int>::epsilon();
+	static constexpr Real max       = std::numeric_limits<int>::max();
+	static constexpr Real min       = std::numeric_limits<int>::min();
+	static constexpr Real infinity  = std::numeric_limits<int>::infinity();
+};
+
+//// for tensor comparison operators
+
+template<>
+struct NumTraits<bool>
+{
+	using Real = bool;
+	
+	static constexpr bool isComplex = false;
+	static constexpr Real epsilon   = std::numeric_limits<bool>::epsilon();
+	static constexpr Real max       = std::numeric_limits<bool>::max();
+	static constexpr Real min       = std::numeric_limits<bool>::min();
+	static constexpr Real infinity  = std::numeric_limits<bool>::infinity();
 };
 
 } // namespace FSLinalg

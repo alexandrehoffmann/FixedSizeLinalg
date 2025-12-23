@@ -19,7 +19,7 @@ public:
 
 	using TmpMatrix = FSLinalg::Matrix< typename Expr::Scalar, Expr::nRows, Expr::nCols >;
 	using Matrix = std::conditional_t<Expr::isLeaf, Expr, TmpMatrix>;
-	using Scalar = typename Expr::RealScalar;
+	using Scalar = BIC::Fixed<typename Expr::RealScalar, typename Expr::RealScalar(1)>;
 	
 	static constexpr bool isConjugated = false;
 	static constexpr bool isTransposed = false;
@@ -32,7 +32,7 @@ public:
 	StripSymbolsAndEvalMatrix(const MatrixBase<Expr>& expr) : m_matrix(expr.derived()) {}
 	
 	const     Matrix& getMatrix() const { return m_matrix; }
-	constexpr Scalar  getAlpha()  const { return 1.; }
+	constexpr Scalar  getAlpha()  const { return {}; }
 private:
 	std::conditional_t<Expr::isLeaf, const Expr&, TmpMatrix> m_matrix;
 };
@@ -42,7 +42,7 @@ class StripSymbolsAndEvalMatrix< MatrixScale<Alpha,Expr> >
 {
 public:
 	using Matrix = typename StripSymbolsAndEvalMatrix<Expr>::Matrix;
-	using Scalar = std::common_type_t<Alpha, typename StripSymbolsAndEvalMatrix<Expr>::Scalar>;
+	using Scalar = decltype(std::declval<Alpha>() * std::declval<typename StripSymbolsAndEvalMatrix<Expr>::Scalar>());
 	
 	static constexpr bool isConjugated = StripSymbolsAndEvalMatrix<Expr>::isConjugated;
 	static constexpr bool isTransposed = StripSymbolsAndEvalMatrix<Expr>::isTransposed;

@@ -4,7 +4,6 @@
 #include <FSLinalg/CRTPBase.hpp>
 #include <FSLinalg/Scalar.hpp>
 #include <FSLinalg/misc/Logical.hpp>
-#include <type_traits>
 
 namespace FSLinalg
 {
@@ -15,7 +14,7 @@ template<class Derived>
 class MatrixBase : public CRTPBase<Derived>
 {
 public:
-	using Base             = CRTPBase<Derived>;	
+	using CRTP             = CRTPBase<Derived>;	
 	using DerivedTraits    = MatrixTraits<Derived>;
 	using Scalar           = typename DerivedTraits::Scalar;
 	using RealScalar       = typename NumTraits<Scalar>::Real;
@@ -53,13 +52,13 @@ public:
 	constexpr Size getCols() const { return nCols; }
 	constexpr Size getSize() const { return size;  }
 	
-	const_ReturnType operator()(const Size& i, const Size j) const requires(hasReadRandomAccess)  { return Base::derived().getImpl(i, j); }
-	      ReturnType operator()(const Size& i, const Size j)       requires(hasWriteRandomAccess) { return Base::derived().getImpl(i, j); }
+	const_ReturnType operator()(const Size i, const Size j) const requires(hasReadRandomAccess)  { return CRTP::derived().getImpl(i, j); }
+	      ReturnType operator()(const Size i, const Size j)       requires(hasWriteRandomAccess) { return CRTP::derived().getImpl(i, j); }
 	      
-	const_ReturnType operator[](const Size& i) const requires(hasReadRandomAccess  and hasFlatRandomAccess) { return Base::derived().getImpl(i); }
-	      ReturnType operator[](const Size& i)       requires(hasWriteRandomAccess and hasFlatRandomAccess) { return Base::derived().getImpl(i); }
+	const_ReturnType operator[](const Size i) const requires(hasReadRandomAccess  and hasFlatRandomAccess) { return CRTP::derived().getImpl(i); }
+	      ReturnType operator[](const Size i)       requires(hasWriteRandomAccess and hasFlatRandomAccess) { return CRTP::derived().getImpl(i); }
 
-	template<class Dst> bool isAliasedTo(const MatrixBase<Dst>& other) const { return Base::derived().isAliasedToImpl(other); }
+	template<class Dst> bool isAliasedTo(const MatrixBase<Dst>& other) const { return CRTP::derived().isAliasedToImpl(other); }
 
 	template<typename Bool, typename Alpha, class Dst>
 	void assignTo(const Bool checkAliasing, const Alpha& alpha, MatrixBase<Dst>& dst) const requires(IsConvertibleTo<Dst>::value and IsScalar<Alpha>::value);

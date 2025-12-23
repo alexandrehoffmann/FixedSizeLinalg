@@ -9,7 +9,7 @@ template<FSLinalg::Matrix_concept Expr>
 class fmt::formatter< Expr > : public fmt::formatter< typename FSLinalg::MatrixBase<Expr>::Scalar >
 {
 public:
-	static_assert(Expr::hasReadRandomAccess, "Vector must have a read random access Iterator");
+	static_assert(Expr::hasReadRandomAccess, "Matrix must have a read random access Iterator");
 	
 	constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
 	
@@ -18,8 +18,8 @@ public:
 	{
 		using Size = typename FSLinalg::MatrixBase<Expr>::Size;
 		
-		Size rowsM1 = Size(A.getRows()-1);
-		Size colsM1 = Size(A.getCols()-1);
+		const Size rowsM1 = Size(A.getRows()-1);
+		const Size colsM1 = Size(A.getCols()-1);
 		
 		auto out = ctx.out();
 		

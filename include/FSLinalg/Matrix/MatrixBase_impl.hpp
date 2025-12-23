@@ -32,17 +32,17 @@ void MatrixBase<Derived>::assignTo(const Bool checkAliasing, const Alpha& alpha,
 		{
 			if constexpr (hasFlatRandomAccess)
 			{
-				for (Size i=0; i!=getSize(); ++i) { dst[i] = alpha*Base::derived().getImpl(i); }
+				for (Size i=0; i!=getSize(); ++i) { dst[i] = alpha*CRTP::derived().getImpl(i); }
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) = alpha*Base::derived().getImpl(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) = alpha*CRTP::derived().getImpl(i,j); }}
 			}
 		}
 	}
 	else
 	{
-		Base::derived().assignToImpl(checkAliasing, alpha, dst);
+		CRTP::derived().assignToImpl(checkAliasing, alpha, dst);
 	}
 }
 
@@ -71,17 +71,17 @@ void MatrixBase<Derived>::increment(const Bool checkAliasing, const Alpha& alpha
 		{
 			if constexpr (hasFlatRandomAccess)
 			{
-				for (Size i=0; i!=getSize(); ++i) { dst[i] += alpha*Base::derived().getImpl(i); }
+				for (Size i=0; i!=getSize(); ++i) { dst[i] += alpha*CRTP::derived().getImpl(i); }
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) += alpha*Base::derived().getImpl(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) += alpha*CRTP::derived().getImpl(i,j); }}
 			}
 		}
 	}
 	else
 	{
-		Base::derived().incrementImpl(checkAliasing, alpha, dst);
+		CRTP::derived().incrementImpl(checkAliasing, alpha, dst);
 	}
 }
 
@@ -110,17 +110,17 @@ void MatrixBase<Derived>::decrement(const Bool checkAliasing, const Alpha& alpha
 		{
 			if constexpr (hasFlatRandomAccess)
 			{
-				for (Size i=0; i!=getSize(); ++i) { dst[i] -= alpha*Base::derived().getImpl(i); }
+				for (Size i=0; i!=getSize(); ++i) { dst[i] -= alpha*CRTP::derived().getImpl(i); }
 			}
 			else
 			{
-				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) -= alpha*Base::derived().getImpl(i,j); }}
+				for (Size i=0; i!=getRows(); ++i) { for (Size j=0; j!=getCols(); ++j) { dst(i,j) -= alpha*CRTP::derived().getImpl(i,j); }}
 			}
 		}
 	}
 	else
 	{
-		Base::derived().decrementImpl(checkAliasing, alpha, dst);
+		CRTP::derived().decrementImpl(checkAliasing, alpha, dst);
 	}
 }
 

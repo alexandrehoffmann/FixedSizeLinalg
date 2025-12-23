@@ -42,7 +42,7 @@ Matrix<T,Nrows,Ncols>::Matrix(std::initializer_list< std::initializer_list<Scala
 }
 
 template<typename T, unsigned int Nrows, unsigned Ncols>
-Matrix<T,Nrows,Ncols> Matrix<T,Nrows,Ncols>::random(const RealScalar& lb, const RealScalar& ub)
+auto Matrix<T,Nrows,Ncols>::random(const RealScalar& lb, const RealScalar& ub) -> Matrix
 {
 	std::random_device rd; 
 	std::mt19937 gen(rd()); 

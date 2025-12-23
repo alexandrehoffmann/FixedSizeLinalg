@@ -26,7 +26,8 @@ void MatrixProduct<Lhs,Rhs>::assignToHelper(const Bool checkAliasing, const Alph
 		StripSymbolsAndEvalMatrix<Lhs> strippedLhs(m_lhs);
 		StripSymbolsAndEvalMatrix<Rhs> strippedRhs(m_rhs);
 		
-		const auto beta      = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
+		const auto beta = alpha*strippedLhs.getAlpha()*strippedRhs.getAlpha();
+		
 		const StrippedLhs& A = strippedLhs.getMatrix();
 		const StrippedRhs& B = strippedRhs.getMatrix();
 		

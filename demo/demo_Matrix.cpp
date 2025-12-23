@@ -5,7 +5,7 @@ int main()
 	FSLinalg::UnitRowVector<4> e0(0);
 	FSLinalg::RealRowVector<3> a({2, 3, 0});
 	
-	const auto expr1 = 0.5*FSLinalg::outer(e0, a)*a;
+	const auto expr1 = BIC::fixed<double, 0.5>*FSLinalg::outer(e0, a)*a;
 	
 	fmt::print("expr = {}\n", FSLinalg::RealRowVector<4>(expr1));
 	fmt::print("expr.createTemporaryMatrix = {}\n", expr1.createTemporaryLhs);

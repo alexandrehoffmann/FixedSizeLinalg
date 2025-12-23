@@ -12,7 +12,7 @@ template<bool conjugateA, bool conjugateB>
 struct Product
 {
 	template<RealScalar_concept A, RealScalar_concept B>
-	using RealReturnType = std::common_type_t<A, B>;
+	using RealReturnType = decltype(std::declval<A>() * std::declval<B>());
 	
 	template<Scalar_concept A, Scalar_concept B>
 	using CpxReturnType = std::complex<RealReturnType<
